@@ -1,9 +1,5 @@
 require "formula"
 
-# Documentation: https://github.com/Homebrew/homebrew/blob/master/share/doc/homebrew/Formula-Cookbook.md
-#                /usr/local/Library/Contributions/example-formula.rb
-# PLEASE REMOVE ALL GENERATED COMMENTS BEFORE SUBMITTING YOUR PULL REQUEST!
-
 class Kicad < Formula
   homepage "http://kicad-pcb.org"
   head "https://github.com/KiCad/kicad-source-mirror.git"
@@ -16,8 +12,8 @@ class Kicad < Formula
   depends_on "cmake" => :build
   depends_on "boost" 
   depends_on "cairo"
-  depends_on "swig"
-  depends_on "pkgconfig"
+  depends_on "swig" => :build
+  depends_on "pkg-config"
   depends_on "libpng"
   depends_on "pcre"  
 
