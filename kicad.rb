@@ -31,7 +31,7 @@ class Kicad < Formula
         ENV['CXX'] = "/usr/bin/clang++"
         
         args = %W[
-          --prefix=#{kicad_path}/wx-bin
+          --prefix=#{buildpath}/wx-bin
           --with-opengl
           --enable-aui
           --enable-utf8
@@ -49,7 +49,7 @@ class Kicad < Formula
           ]
         system "mkdir", "wx-build"
         cd "wx-build" do
-        system "#{kicad_path}/wx/configure", *args
+        system "#{buildpath}/wx/configure", *args
         system "make", "-j4"
         system "make", "install"
       end
@@ -58,8 +58,8 @@ class Kicad < Formula
           ENV['CC'] = "/usr/bin/clang"
           ENV['CXX'] = "/usr/bin/clang++"
           ENV.append_to_cflags "-stdlib=libc++"
-          system "/usr/bin/python", "setup.py", "build_ext", "WX_CONFIG=#{kicad_path}/wx-bin/bin/wx-config", "UNICODE=1", "WXPORT=osx_cocoa", "BUILD_BASE=#{kicad_path}/wx/wx-build"
-          system "/usr/bin/python", "setup.py", "install", "--prefix=#{kicad_path}/wx-bin", "WX_CONFIG=#{kicad_path}/wx-bin/bin/wx-config", "UNICODE=1", "WXPORT=osx_cocoa", "BUILD_BASE=#{kicad_path}/wx/wx-build"
+          system "/usr/bin/python", "setup.py", "build_ext", "WX_CONFIG=#{buildpath}/wx-bin/bin/wx-config", "UNICODE=1", "WXPORT=osx_cocoa", "BUILD_BASE=#{buildpath}/wx/wx-build"
+          system "/usr/bin/python", "setup.py", "install", "--prefix=#{buildpath}/wx-bin", "WX_CONFIG=#{buildpath}/wx-bin/bin/wx-config", "UNICODE=1", "WXPORT=osx_cocoa", "BUILD_BASE=#{buildpath}/wx/wx-build"
         end
       end
     end
@@ -76,10 +76,10 @@ class Kicad < Formula
         args = %W[
           -DCMAKE_INSTALL_PREFIX=#{prefix}
           -DCMAKE_OSX_DEPLOYMENT_TARGET=#{MacOS.version}
-          -DwxWidgets_CONFIG_EXECUTABLE=#{kicad_path}/wx-bin/bin/wx-config
+          -DwxWidgets_CONFIG_EXECUTABLE=#{buildpath}/wx-bin/bin/wx-config
           -DPYTHON_EXECUTABLE=/usr/bin/python
           -DPYTHON_LIBRARY=/usr/lib/libpython.dylib
-          -DPYTHON_SITE_PACKAGE_PATH=#{kicad_path}/wx-bin/lib/python2.7/site-packages
+          -DPYTHON_SITE_PACKAGE_PATH=#{buildpath}/wx-bin/lib/python2.7/site-packages
           -DKICAD_SCRIPTING=ON
           -DKICAD_SCRIPTING_MODULES=ON
           -DKICAD_SCRIPTING_WXPYTHON=ON
