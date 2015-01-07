@@ -16,6 +16,7 @@ class Kicad < Formula
   depends_on "pkg-config"
   depends_on "libpng"
   depends_on "pcre"
+  depends_on "glew"
 
   def install
     resource("wxPython").stage do
