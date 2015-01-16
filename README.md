@@ -34,6 +34,11 @@ and no non-standard behavior will be done.
 This build...is not short. You may see no activity for long stretches of time, this is normal and its just a very heavyweight build.  Be patient, go grab a sandwich or play some Battletoads on your NES, but after some patience, the build should finish.  
 Unless it fails horribly instead. Should that happen please post the problem to this repo's issues page! 
 
-Once it's installed, if you want the suite of .apps in your /Applications folder, you need to run `brew linkapps kicad` and you're good to go.  
+Once it's installed, if you want the suite of .apps in your /Applications folder, you need to run 
+```sh
+brew linkapps kicad  #link .app bundles into /Applications
+```
+
+and you're good to go.  
 
 Anyway, have fun!  Solder is the best programming language. :)
