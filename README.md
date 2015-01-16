@@ -23,7 +23,7 @@ Your library tables will be automatically populated with all .pretty repos from 
 brew install kicad-library --with-local-tables #use local .pretty libraries
 ```
 
-Finally, if you prefer to manage the library manually and don't want anything touched and no naughty symlinking of stuff outside `/usr/local`, this is all limited to the kicad-library fomula and it is an optional dependency.  Install kicad with
+Finally, if you prefer to manage the library manually and don't want anything touched and no naughty symlinking of stuff outside `/usr/local`, this is all limited to the kicad-library fomula and it is an optional dependency.  Install kicad with:
 
 ```sh
 brew install kicad --without-kicad-library #If you plan on managing the library manually
@@ -31,14 +31,17 @@ brew install kicad --without-kicad-library #If you plan on managing the library 
 
 and no non-standard behavior will be done.  
 
-This build...is not short. You may see no activity for long stretches of time, this is normal and its just a very heavyweight build.  Be patient, go grab a sandwich or play some Battletoads on your NES, but after some patience, the build should finish.  
-Unless it fails horribly instead. Should that happen please post the problem to this repo's issues page! 
-
-Once it's installed, if you want the suite of .apps in your /Applications folder, you need to run 
+Once it's installed, if you want the suite of .apps symlinked into your /Applications folder, you need to run: 
 ```sh
 brew linkapps kicad  #link .app bundles into /Applications
 ```
 
-and you're good to go.  
+You're all set!
+
+**Warning:**
+This build...is not short. You may see no activity for long stretches of time, this is normal and its just a very heavyweight build.  Be patient, go grab a sandwich or play some Battletoads on your NES, but after some patience, the build should finish.  
+
+Unless it fails horribly instead. Should that happen please post the problem to this repo's issues page! 
+
 
 Anyway, have fun!  Solder is the best programming language. :)
