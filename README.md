@@ -1,14 +1,16 @@
-homebrew-kicad
-==============
+# Homebrew-KiCad 
 
-Delicious and foamy --HEAD only tap for KiCad, a complete and well-developed electronic design automation suite.
+Delicious and foamy --HEAD only [Homebrew](https://github.com/mxcl/homebrew) tap for [KiCad](http://www.kicad-pcb.org) and it's library.  This is intended to make it easy for OS X users to try out the latest revision of the development branch, or to help handle installation of the model, footprint, and component libraries.  
 
-No setup, just a quick:
+## Installation
+
+Installation is simple and much like any other tap, but please read the next section carefully first.  There are certain options you may wish to enable or disable.  Once you're sure, go head and:
 ```sh
 brew tap metacollin/kicad
 brew install kicad --HEAD
 ```
 
+## Read this before installing!
 It will automatically download the latest KiCad Library files and they will reside in your Cellar like any other homebrew formula, but presently, they will be naughtily symlinked into `~/Library/Application Support/kicad` and the library table into `~/Library/Preferences/kicad folder`.  
 
 If you already have a library table there from another build of KiCad, it will be renamed to `fp-lib-table_old<random hex string>` and moved asside. If this behavior is unacceptable, before installing kicad, run:
@@ -39,16 +41,18 @@ brew linkapps kicad  #link .app bundles into /Applications
 
 You're all set!
 
-**Notes on upgrading:**
+### Notes on upgrading
 KiCad is a very active project, with revisions coming out frequently (sometimes with less than 24 hours in between).  Homebrew will not detect this and it does not handle upgrading --HEAD only formulae.  If you want to stay on the bleeding edge, you can manually force an upgrade at any time using:
 ```sh
 brew reinstall kicad --HEAD --without-kicad-library #the second flag is not necessary, but saves some build time
 ```
 
-**Notes on the library:**
+
+### Notes on the library
 You do not have to use a version of KiCad built with this tap with the library in this tap.  You can use a binary from elsehwere and it will find and use the library installed with this formula.
 
 If kicad library fails to install, you probably, at some point, manually put some files in `~/Library/Application Support/kicad`. Please move (or simply rename) the directory if you wish to use homebrew to install a fresh version.  Homebrew, by design, cannot overwrite files so you must manually move any conflicting files out of the way.
+
 
 
 **Conclusion:**
