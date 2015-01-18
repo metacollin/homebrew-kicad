@@ -11,7 +11,7 @@ brew install kicad --HEAD
 ```
 
 ## Read this before installing!
-It will automatically download the latest KiCad Library files and they will reside in your Cellar like any other homebrew formula, but presently, they will be naughtily symlinked into `~/Library/Application Support/kicad` and the library table into `~/Library/Preferences/kicad folder`.  
+The `kicad` formula will automatically download the latest KiCad Library files and they will reside in your Cellar like any other homebrew formula, but presently, they will be naughtily symlinked into `~/Library/Application Support/kicad` and the library table into `~/Library/Preferences/kicad folder`.  
 
 If you already have a library table there from another build of KiCad, it will be renamed to `fp-lib-table_old<random hex string>` and moved asside. If this behavior is unacceptable, before installing kicad, run:
 
