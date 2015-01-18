@@ -41,21 +41,21 @@ brew linkapps kicad  #link .app bundles into /Applications
 
 You're all set!
 
-### Notes on upgrading
+## Notes on upgrading
 KiCad is a very active project, with revisions coming out frequently (sometimes with less than 24 hours in between).  Homebrew will not detect this and it does not handle upgrading --HEAD only formulae.  If you want to stay on the bleeding edge, you can manually force an upgrade at any time using:
 ```sh
 brew reinstall kicad --HEAD --without-kicad-library #the second flag is not necessary, but saves some build time
 ```
 
 
-### Notes on the library
+###Notes on the library
 You do not have to use a version of KiCad built with this tap with the library in this tap.  You can use a binary from elsehwere and it will find and use the library installed with this formula.
 
 If kicad library fails to install, you probably, at some point, manually put some files in `~/Library/Application Support/kicad`. Please move (or simply rename) the directory if you wish to use homebrew to install a fresh version.  Homebrew, by design, cannot overwrite files so you must manually move any conflicting files out of the way.
 
 
 
-**Conclusion:**
+## Conlusion
 This build...is not short. You may see no activity for long stretches of time, this is normal and its just a very heavyweight build. This will use 100% CPU even on 8+ core systems along with lots of disk I/O.  45 minutes is not an uncommon build time, not including dependencies. 
 
 Anyway, have fun and I hope you enjoy using KiCad! :)
