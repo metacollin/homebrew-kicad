@@ -2,7 +2,7 @@ require "formula"
 
 class Kicad < Formula
   homepage "http://kicad-pcb.org"
-  head "https://github.com/KiCad/kicad-source-mirror.git"
+  head "https://code.launchpad.net/~kicad-product-committers/kicad/product", :using => :bzr
 
   resource 'wxPython' do
     url "http://downloads.sourceforge.net/project/wxpython/wxPython/3.0.2.0/wxPython-src-3.0.2.0.tar.bz2"
@@ -11,7 +11,6 @@ class Kicad < Formula
 
   depends_on "bzr" => :build
   depends_on "cmake" => :build
-  depends_on "boost"
   depends_on "cairo"
   depends_on "swig" 
   depends_on "pkg-config"
@@ -25,6 +24,12 @@ class Kicad < Formula
  # option 'with-local-tables', 'Populates the library tables with locally stored .pretty files. This will move aside any current tables.'
  # option 'without-kicad' , 'Do not build or install kicad, but only the library and, if selected, the library tables.'
 
+
+patch :p0 do 
+  url "https://gist.githubusercontent.com/metacollin/97b547034d144f483c0f/raw/8d7f4fc2b119b126bb76322e5c1461f61bf37ef7/boost.patch"
+  sha1 "e3a5b58219123e69a569f4b68fa5ee1acf356b00"
+end
+
   def install
       resource("wxPython").stage do
         (buildpath/"wx").install Dir["*"]
@@ -36,6 +41,11 @@ class Kicad < Formula
 
           ENV['CC'] = "/usr/bin/clang"
           ENV['CXX'] = "/usr/bin/clang++"
+          unless MacOS.version < :mavericks
+              ENV.append "CXXFLAGS", "-stdlib=libc++"
+          else
+              ENV.append "CXXFLAGS", "-stdlib=libstdc++"
+          end
           
           args = %W[
             --prefix=#{buildpath}/wx-bin
@@ -57,14 +67,19 @@ class Kicad < Formula
           system "mkdir", "wx-build"
           cd "wx-build" do
           system "#{buildpath}/wx/configure", *args
-          system "make", "-j4"
+          system "make", "-j8"
           system "make", "install"
         end
           #system "sleep 1000"
           cd "wxPython" do
             ENV['CC'] = "/usr/bin/clang"
             ENV['CXX'] = "/usr/bin/clang++"
-            ENV.append_to_cflags "-stdlib=libc++"
+            unless MacOS.version < :mavericks
+              ENV.append "CXXFLAGS", "-stdlib=libc++"
+            else
+              ENV.append "CXXFLAGS", "-stdlib=libstdc++"
+            end
+
             system "/usr/bin/python", "setup.py", "build_ext", "WX_CONFIG=#{buildpath}/wx-bin/bin/wx-config", "UNICODE=1", "WXPORT=osx_cocoa", "BUILD_BASE=#{buildpath}/wx/wx-build"
             system "/usr/bin/python", "setup.py", "install", "--prefix=#{buildpath}/wx-bin", "WX_CONFIG=#{buildpath}/wx-bin/bin/wx-config", "UNICODE=1", "WXPORT=osx_cocoa", "BUILD_BASE=#{buildpath}/wx/wx-build"
           end
@@ -86,11 +101,10 @@ class Kicad < Formula
             -DKICAD_SCRIPTING_MODULES=ON
             -DKICAD_SCRIPTING_WXPYTHON=ON
             -DCMAKE_BUILD_TYPE=Release
-            -DKICAD_SKIP_BOOST=ON
         ]
 
           system "cmake", "../", *args
-          system "make -j4"
+          system "make -j8"
           system "make install"
         end
       end
