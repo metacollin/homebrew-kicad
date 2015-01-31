@@ -43,6 +43,7 @@ end
           ENV['CXX'] = "/usr/bin/clang++"
           unless MacOS.version < :mavericks
               ENV.append "CXXFLAGS", "-stdlib=libc++"
+              ENV.append "ARCHFLAGS", "-Wno-error=unused-command-line-argument-hard-error-in-future"
           else
               ENV.append "CXXFLAGS", "-stdlib=libstdc++"
           end
@@ -76,6 +77,7 @@ end
             ENV['CXX'] = "/usr/bin/clang++"
             unless MacOS.version < :mavericks
               ENV.append "CXXFLAGS", "-stdlib=libc++"
+              ENV.append "ARCHFLAGS", "-Wno-error=unused-command-line-argument-hard-error-in-future"
             else
               ENV.append "CXXFLAGS", "-stdlib=libstdc++"
             end
