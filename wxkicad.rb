@@ -60,11 +60,11 @@ class Wxkicad < Formula
       "UNICODE=1",
       "BUILD_BASE=#{buildpath}"
      ]
-     system "/usr/local/python", "setup.py",
+     system "/usr/bin/python", "setup.py",
                      "build_ext",
                      *blargs
 
-     system "/usr/local/python", "setup.py",
+     system "/usr/bin/python", "setup.py",
                      "install",
                      "--prefix=#{prefix}",
                      *blargs
