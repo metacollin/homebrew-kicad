@@ -7,7 +7,7 @@ class Wxkicad < Formula
   depends_on "pkg-config" => :build
   depends_on "pcre" => :universal
   depends_on "glew" => :universal
-  dpeends_on "expat" => :universal
+  depends_on "expat" => :universal
 
   keg_only "Custom patched version of wx and wxPython, only for use by KiCad."
 
