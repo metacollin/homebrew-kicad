@@ -69,6 +69,6 @@ class Wxkicad < Formula
                      "--prefix=#{prefix}",
                      *blargs
     end
-    system "chmod", "-R", "0744", "#{lib}"
+    chmod_R "0744", "#{lib}"
   end
 end
