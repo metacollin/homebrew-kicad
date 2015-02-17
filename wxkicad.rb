@@ -18,6 +18,7 @@ class Wxkicad < Formula
 
   def install
     ENV['MAC_OS_X_VERSION_MIN_REQUIRED'] = "#{MacOS.version}"
+    ENV['ARCHFLAGS'] = "-Wunused-command-line-argument-hard-error-in-future"
     ENV.libcxx
 
     args = [
@@ -69,6 +70,6 @@ class Wxkicad < Formula
                      "--prefix=#{prefix}",
                      *blargs
     end
-    chmod_R "0744", "#{lib}"
+    chmod_R 0744, lib
   end
 end
