@@ -40,15 +40,15 @@ class Kicad < Formula
             -DCMAKE_BUILD_TYPE=Release
             -DCMAKE_CXX_FLAGS=-stdlib=libc++
             -DCMAKE_C_FLAGS=-stdlib=libc++
-            -DJUCAD_REPO_NAME="brewed product + metacollin patches"
+            -DKICAD_REPO_NAME=brewedproduct_metacollin
         ]
         
-        if build.with? "menu-bar-icons"
+        if build.with? "menu-icons"
           args << "-DUSE_IMAGES_IN_MENUS=ON"
         end
 
           system "cmake", "../", *args
-          system "make", "-j8"
+          system "make", "-j6"
           system "make install"
         end
       end
