@@ -4,15 +4,14 @@ class Kicad < Formula
   homepage "http://kicad-pcb.org"
   head "https://code.launchpad.net/~kicad-product-committers/kicad/product", :using => :bzr
 
-  #`env :std
-  
   depends_on "bzr" => :build
   depends_on "cmake" => :build
   depends_on "kicad-library" => :recommended
   depends_on "wxkicad" 
-  #epends_on "wxkpython"
   depends_on "swig" => :build
   depends_on "pcre" => :build
+  
+  option "with-menu-icons", "Build with icons in all the menubar menus.  Recommended."
 
   patch :p0 do
     url "https://gist.githubusercontent.com/metacollin/97b547034d144f483c0f/raw/8d7f4fc2b119b126bb76322e5c1461f61bf37ef7/boost.patch"
@@ -22,15 +21,8 @@ class Kicad < Formula
 
   def install
       mkdir "build" do
-          #ENV["CMAKE_C_COMPILER"] = "/usr/bin/clang"
-          #ENV["CMAKE_CXX_COMPILER"] = "/usr/bin/clang++"
-         # ENV.append "CPPFLAGS", "-I/usr/local/opt/wxkicad/include"
-         # ENV.append "LDFLAGS", " -L/usr/local/opt/wxkicad/lib"
-         #ENV.delete "CPPFLAGS"
-         #ENV.delete "LDFLAGS"
-        # ENV.delete "CMAKE_PREFIX_PATH"
-        # ENV.delete "ALOCAL_PATH"
         ENV.prepend_create_path "PYTHONPATH", "#{Formula["wxkicad"].lib}/python2.7/site-packages"
+        ENV['ARCHFLAGS'] = "-Wunused-command-line-argument-hard-error-in-future"
         ENV.libcxx
         
           args = %W[
@@ -48,7 +40,12 @@ class Kicad < Formula
             -DCMAKE_BUILD_TYPE=Release
             -DCMAKE_CXX_FLAGS=-stdlib=libc++
             -DCMAKE_C_FLAGS=-stdlib=libc++
+            -DJUCAD_REPO_NAME="brewed product + metacollin patches"
         ]
+        
+        if build.with? "menu-bar-icons"
+          args << "-DUSE_IMAGES_IN_MENUS=ON"
+        end
 
           system "cmake", "../", *args
           system "make", "-j8"
