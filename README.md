@@ -1,5 +1,8 @@
 # Homebrew-KiCad 
 
+**Update: I have completely reworked the entire tap, committed dozens of fixes, tested and retested, and I am tentitively declaring that this tap is finally going to begin working for most users.  Build times should be substantially reduced after the wxkicad formula automatically builds the first time, and the kicad formula is polished with caveats and more options.  Everyone has my sincere apologies for the numerous problems that appeared after what I thought was a relatively innocent refactoring.  Thank you for being so patient!**
+
+
 Delicious and foamy --HEAD only [Homebrew](https://github.com/mxcl/homebrew) tap for [KiCad](http://www.kicad-pcb.org) and it's library.  This is intended to make it easy for OS X users to try out the latest revision of the development branch, or to help handle installation of the model, footprint, and component libraries.  
 
 ## Installation
@@ -40,6 +43,18 @@ brew linkapps kicad  #link .app bundles into /Applications
 ```
 
 You're all set!
+
+## It's good to have options
+There are a few options available to further customize your build.  
+
+```sh
+--without-webkit
+```
+This will disable the integrated webkit browser for users who want to eliminate any security risks, however small, that including a web browser within kicad might pose.
+```sh
+--with-menu-icons
+```
+This will add icons to the menu bar items.  It's turned off by default because that is not seen very often on OS X and might be too out of place for many users.  Personally, I like them.  The difference is purely cosmetic, so use this according to personal preference.  
 
 ## Notes on upgrading
 KiCad is a very active project, with revisions coming out frequently (sometimes with less than 24 hours in between).  Homebrew will not detect this and it does not handle upgrading --HEAD only formulae.  If you want to stay on the bleeding edge, you can manually force an upgrade at any time using:
