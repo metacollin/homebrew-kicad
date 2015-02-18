@@ -1,6 +1,6 @@
 # Homebrew-KiCad 
 
-**Update: I have completely reworked the entire tap, committed dozens of fixes, tested and retested, and I am tentitively declaring that this tap is finally going to begin working for most users.  Build times should be substantially reduced after the wxkicad formula automatically builds the first time, and the kicad formula is polished with caveats and more options.  Everyone has my personal apologies for the numerous problems that appeared after what I thought was a relatively innocent refactoring.  Thank you for being so patient!**
+**Update: I have completely reworked the entire tap, committed dozens of fixes, tested and retested, and I am tentitively declaring that this tap is finally going to begin working for most users.  Build times should be substantially reduced after the wxkicad formula automatically builds the first time, and the kicad formula is polished with caveats and more options.  Everyone has my sincere apologies for the numerous problems that appeared after what I thought was a relatively innocent refactoring.  Thank you for being so patient!**
 
 
 Delicious and foamy --HEAD only [Homebrew](https://github.com/mxcl/homebrew) tap for [KiCad](http://www.kicad-pcb.org) and it's library.  This is intended to make it easy for OS X users to try out the latest revision of the development branch, or to help handle installation of the model, footprint, and component libraries.  
