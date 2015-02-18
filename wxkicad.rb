@@ -44,11 +44,7 @@ class Wxkicad < Formula
     system "./configure", *args
     system "make", "-j6", "install"
 
-    ohai ""
-    ohai "*****"
-    ohai "The custom KiCad version of wx has built successfully. Woohoo!"
-    ohai "*****"
-    ohai "But we're not done yet.  Hold onto your butts, now building wxpython."
+    ohai "Now building wxpython..."
 
     cd "wxPython" do
      ENV['MAC_OS_X_VERSION_MIN_REQUIRED'] = "#{MacOS.version}"
@@ -70,6 +66,5 @@ class Wxkicad < Formula
                      "--prefix=#{prefix}",
                      *blargs
     end
-    chmod_R(0744, Dir.glob("#{lib}/*"))
   end
 end
