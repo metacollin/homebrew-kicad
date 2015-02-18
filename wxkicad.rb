@@ -70,6 +70,6 @@ class Wxkicad < Formula
                      "--prefix=#{prefix}",
                      *blargs
     end
-    chmod_R(0744, Dir.glob("#{lib}/*.dylib"))
+    chmod_R(0744, Dir.glob("#{lib}/*"))
   end
 end
