@@ -33,6 +33,7 @@ class Kicad < Formula
       ENV.prepend_create_path "PYTHONPATH", "#{Formula["wxkicad"].lib}/python2.7/site-packages"
       ENV['ARCHFLAGS'] = "-Wunused-command-line-argument-hard-error-in-future"
       ENV.libcxx
+      ENV.append_to_cflags "-stdlib=libc++" 
         
       args = %W[
         -DCMAKE_C_COMPILER=/usr/bin/clang

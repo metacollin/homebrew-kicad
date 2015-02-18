@@ -49,6 +49,7 @@ class Wxkicad < Formula
     cd "wxPython" do
      ENV['MAC_OS_X_VERSION_MIN_REQUIRED'] = "#{MacOS.version}"
      ENV.append_to_cflags "-stdlib=libc++"
+     ENV['ARCHFLAGS'] = "-Wunused-command-line-argument-hard-error-in-future"
      ENV["WXWIN"] = buildpath
 
      blargs = [
@@ -57,11 +58,11 @@ class Wxkicad < Formula
       "UNICODE=1",
       "BUILD_BASE=#{buildpath}"
      ]
-     system "/usr/bin/python", "setup.py",
+     system "CC=/usr/bin/clang CXX=/usr/bin/clang++ /usr/bin/python", "setup.py",
                      "build_ext",
                      *blargs
 
-     system "/usr/bin/python", "setup.py",
+     system "CC=/usr/bin/clang CXX=/usr/bin/clang++ /usr/bin/python", "setup.py",
                      "install",
                      "--prefix=#{prefix}",
                      *blargs
