@@ -24,7 +24,8 @@ class Kicadboost < Formula
             "-d2",
             "-j#{ENV.make_jobs}",
             "--layout=tagged",
-            "--user-config=user-config.jam"
+            "--user-config=user-config.jam",
+            "install"]
           ]
 
     args << "threading=multi,single"
