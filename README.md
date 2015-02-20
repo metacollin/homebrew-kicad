@@ -1,7 +1,6 @@
 # Homebrew-KiCad 
 
-**Update: I have completely reworked the entire tap, committed dozens of fixes, tested and retested, and I am tentitively declaring that this tap is finally going to begin working for most users.  Build times should be substantially reduced after the wxkicad formula automatically builds the first time, and the kicad formula is polished with caveats and more options.  Everyone has my sincere apologies for the numerous problems that appeared after what I thought was a relatively innocent refactoring.  Thank you for being so patient!**
-
+**EPIC FAIL UPDATE:** Please `brew remove wxkicad` if installed.  Then `untap metacollin/kicad` and retap with `tap metacollin/kicad`.  Finally, `brew install kicad --HEAD`.  It works on a clean install of 10.8.  For real.  I believe it works on 10.10 as well, but that is still being confirmed. I feel I owe everyone an explanation/apology, and I've put that at the bottom so as not to obstruct the actual documentation.
 
 Delicious and foamy --HEAD only [Homebrew](https://github.com/mxcl/homebrew) tap for [KiCad](http://www.kicad-pcb.org) and it's library.  This is intended to make it easy for OS X users to try out the latest revision of the development branch, or to help handle installation of the model, footprint, and component libraries.  
 
@@ -70,7 +69,7 @@ If kicad library fails to install, you probably, at some point, manually put som
 
 
 
-## Conlusion
-This build...is not short. You may see no activity for long stretches of time, this is normal and its just a very heavyweight build. This will use 100% CPU even on 8+ core systems along with lots of disk I/O.  45 minutes is not an uncommon build time, not including dependencies. 
+## Whoops... :(
+My laptop, which I had been using to test earlier OS X versions with (using a virtual machine on my desktop proved simply too slow, it took much too long to test if building worked after a change). I was using the install of 10.8 I'd had on my laptop for regular use, but I had forgotten about some of the modifications I had made to OS X on that machine.  I rediscovered these after much head-scratching and frustration. Ironically, these changes PREVENTED the numerous issues everyone else has been having from happening on that machine. Noteably, I had removed gcc and llvm-gcc entirely. After the wipe and clean install, I ran into all the same issues that everyone had been posting, and slowly fixed them one by one, until finally, it worked.  
 
-Anyway, have fun and I hope you enjoy using KiCad! :)
+Ultimately, a bad bit of judgement on my part made me believe (and describe) something I believed to work when it in fact worked for me and only me, because I didn't use a clean dev environment.  So that mistake is directly responsible for the hours a lot of users have wasted trying to get this to work.  I am sincerely sorry to everyone who tried to build this over the past few days. :(
