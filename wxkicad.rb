@@ -7,9 +7,8 @@ class Wxkicad < Formula
    depends_on "pkg-config" => :build
    depends_on "pcre" 
    depends_on "glew" 
-   depends_on "expat" 
 
-  keg_only "Custom patched version of wx and wxPython, only for use by KiCad."
+  keg_only "Custom patched version of wxWidgets, only for use by KiCad."
 
   patch :p1 do
      url "https://gist.githubusercontent.com/metacollin/2d5760743df73c939d53/raw/37c8f5f823c60f76ae30d6acf54ca03f1b11f4f9/wxp.patch"
@@ -17,9 +16,12 @@ class Wxkicad < Formula
   end
 
    def install
+
+    mkdir "wx-build" do
     ENV['MAC_OS_X_VERSION_MIN_REQUIRED'] = "#{MacOS.version}"
     ENV['ARCHFLAGS'] = "-Wunused-command-line-argument-hard-error-in-future"
     ENV.append_to_cflags "-stdlib=libc++"
+    ENV.append "LDFLAGS", "-stdlib=libc++"
 
     args = [
       "--prefix=#{prefix}",
@@ -40,32 +42,40 @@ class Wxkicad < Formula
       "CC=/usr/bin/clang",
       "CXX=/usr/bin/clang++"
       ]
-     
-    system "./configure", *args
-    system "make", "-j6", "install"
 
-    ohai "Now building wxpython..."
-
-    cd "wxPython" do
-     ENV['MAC_OS_X_VERSION_MIN_REQUIRED'] = "#{MacOS.version}"
-     ENV.append_to_cflags "-stdlib=libc++"
-     ENV['ARCHFLAGS'] = "-Wunused-command-line-argument-hard-error-in-future"
-     ENV["WXWIN"] = buildpath
-
-     blargs = [
-      "WXPORT=osx_cocoa",
-      "WX_CONFIG=#{bin}/wx-config",
-      "UNICODE=1",
-      "BUILD_BASE=#{buildpath}"
-     ]
-     system "CC=/usr/bin/clang CXX=/usr/bin/clang++ /usr/bin/python", "setup.py",
-                     "build_ext",
-                     *blargs
-
-     system "CC=/usr/bin/clang CXX=/usr/bin/clang++ /usr/bin/python", "setup.py",
-                     "install",
-                     "--prefix=#{prefix}",
-                     *blargs
+    system "../configure", *args
+    system "make", "-j6"
+    system "make", "install"
     end
+    (prefix/"wx-build").install Dir["wx-build/*"]
+
+
+
+
+
+
+    # ohai "Now building wxpython..."
+
+    # cd "wxPython" do
+    #  ENV['MAC_OS_X_VERSION_MIN_REQUIRED'] = "#{MacOS.version}"
+    #  ENV.append_to_cflags "-stdlib=libc++"
+    #  ENV['ARCHFLAGS'] = "-Wunused-command-line-argument-hard-error-in-future"
+    #  ENV["WXWIN"] = buildpath
+
+    #  blargs = [
+    #   "WXPORT=osx_cocoa",
+    #   "WX_CONFIG=#{bin}/wx-config",
+    #   "UNICODE=1",
+    #   "BUILD_BASE=#{buildpath}"
+    #  ]
+    #  system "CC=/usr/bin/clang CXX=/usr/bin/clang++ /usr/bin/python", "setup.py",
+    #                  "build_ext",
+    #                  *blargs
+
+    #  system "CC=/usr/bin/clang CXX=/usr/bin/clang++ /usr/bin/python", "setup.py",
+    #                  "install",
+    #                  "--prefix=#{prefix}",
+    #                  *blargs
+    # end
   end
 end
