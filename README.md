@@ -1,8 +1,12 @@
 # Homebrew-KiCad 
 
-**EPIC FAIL UPDATE:** Please `brew remove wxkicad` if installed.  Then `untap metacollin/kicad` and retap with `tap metacollin/kicad`.  Finally, `brew install kicad --HEAD`.  **It works on a clean install of 10.8. For real, this time!**  I ~~believe it works on~~ have confirmed **it works on 10.10 as well**.  It ought to work on 10.9 and maybe 10.7, but that is uncomfirmed presently.  I feel I owe everyone an explanation/apology, and I've put that at the bottom so as not to obstruct the actual documentation.
-
 Delicious and foamy --HEAD only [Homebrew](https://github.com/mxcl/homebrew) tap for [KiCad](http://www.kicad-pcb.org) and it's library.  This is intended to make it easy for OS X users to try out the latest revision of the development branch, or to help handle installation of the model, footprint, and component libraries.  
+
+**EPIC TAP FAIL UPDATE:** Please `brew remove wxkicad` if installed.  Then `untap metacollin/kicad` and retap with `tap metacollin/kicad`.  Finally, `brew install kicad --HEAD`.  **It works on a clean install of 10.8. For real, this time!**  I have also confirmed **it works on 10.10 as well**.  It ought to work on 10.9 and maybe 10.7, but that is uncomfirmed for now.
+
+I feel I owe an explanation/apology to anyone who tried to build this between Feb. 15th to Feb. 20th, 2015.  
+
+I was having trouble replicating the issues I was seeing, for reasons that turned out to be totally specific to me, and I thought this was working.  I've put that at the bottom so as not to obstruct the actual documentation.
 
 ## Installation
 
@@ -67,9 +71,11 @@ You do not have to use a version of KiCad built with this tap with the library i
 
 If kicad library fails to install, you probably, at some point, manually put some files in `~/Library/Application Support/kicad`. Please move (or simply rename) the directory if you wish to use homebrew to install a fresh version.  Homebrew, by design, cannot overwrite files so you must manually move any conflicting files out of the way.
 
+###Notes for KiCad Developers
+You can easily recreate the autoroute coroutine crash by building this formula with the `--without-kicadboost` switch set.  This causes kicad to use homebrew's official boost formula.  I think maybe the minkowski.hpp patch being involved is my mistake, and the issue lies with homebrew's specific handling of boost.  Maybe? I'm not sure. I haven't had time to do so quite yet, but this could be easily confirmed by commenting out the patch command near the top of kicadboost.rb and reinstalling kicadboost.  If the autorouter still doesn't crash...it's homebrew.
 
 
-## Whoops... :(
+### Whoops... :disappointed:
 My laptop, which I had been using to test earlier OS X versions with (using a virtual machine on my desktop proved simply too slow, it took much too long to test if building worked after a change). I was using the install of 10.8 I'd had on my laptop for regular use, but I had forgotten about some of the modifications I had made to OS X on that machine.  I rediscovered these after much head-scratching and frustration. Ironically, these changes PREVENTED the numerous issues everyone else has been having from happening on that machine. Noteably, I had removed gcc and llvm-gcc entirely. After the wipe and clean install, I ran into all the same issues that everyone had been posting, and slowly fixed them one by one, until finally, it worked.  
 
 Ultimately, a bad bit of judgement on my part made me believe (and describe) something I believed to work when it in fact worked for me and only me, because I didn't use a clean dev environment.  So that mistake is directly responsible for the hours a lot of users have wasted trying to get this to work.  I am sincerely sorry to everyone who tried to build this over the past few days. :(
