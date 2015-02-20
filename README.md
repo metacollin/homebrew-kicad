@@ -1,6 +1,6 @@
 # Homebrew-KiCad 
 
-**EPIC FAIL UPDATE:** Please `brew remove wxkicad` if installed.  Then `untap metacollin/kicad` and retap with `tap metacollin/kicad`.  Finally, `brew install kicad --HEAD`.  It works on a clean install of 10.8.  For real.  I believe it works on 10.10 as well, but that is still being confirmed. I feel I owe everyone an explanation/apology, and I've put that at the bottom so as not to obstruct the actual documentation.
+**EPIC FAIL UPDATE:** Please `brew remove wxkicad` if installed.  Then `untap metacollin/kicad` and retap with `tap metacollin/kicad`.  Finally, `brew install kicad --HEAD`.  It works on a clean install of 10.8.  For real.  I ~~believe it works on~~ have confirmed it works on 10.10 as well.  It ought to work on 10.9 and maybe 10.7, but that is uncomfirmed presently.  I feel I owe everyone an explanation/apology, and I've put that at the bottom so as not to obstruct the actual documentation.
 
 Delicious and foamy --HEAD only [Homebrew](https://github.com/mxcl/homebrew) tap for [KiCad](http://www.kicad-pcb.org) and it's library.  This is intended to make it easy for OS X users to try out the latest revision of the development branch, or to help handle installation of the model, footprint, and component libraries.  
 
