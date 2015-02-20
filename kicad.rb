@@ -53,6 +53,13 @@ class Kicad < Formula
         -DKICAD_SKIP_BOOST=ON
       ]
 
+      if build.with? "kicadboost"
+        args << "-DBOOST_ROOT=#{Formula["kicadboost"]}"
+        args << "-DBOOST_INCLUDEDIR=#{Formula["kicadboost"]}/include"
+        args << "-DBOOST_LIBRARYDIR=#{Formula["kicadboost"].lib}"
+        args << "-DBoost_NO_SYSTEM_PATHS=ON"
+      end
+
       # Boost is linked to kicadboost or boost depending on the build options.  All cmake boost buildery 
       # has been circumvented, this formula will hopefully not be effected if the product branch guts 
       # that part from the build procedure.  
@@ -70,7 +77,7 @@ class Kicad < Formula
         system "make install"
       end
     end
-    
+
   def caveats
     unless build.without? "webkit" then <<-EOS.undent 
         With WebKit enabled, you are building a web viewer inside Kicad.

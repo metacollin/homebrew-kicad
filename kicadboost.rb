@@ -8,7 +8,7 @@ class Kicadboost < Formula
 
   keg_only "This is a temporary bandaid package for kicad and will hopefully only be needed briefly."
 
-  #patch :p0, :DATA
+  patch :p0, :DATA
 
 
   def install
