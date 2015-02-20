@@ -5,8 +5,7 @@ class Wxkython < Formula
   depends_on "swig" => :build
   depends_on "pkg-config" => :build
   depends_on "wxkicad"
-  depends_on "bzip2"
-
+  
   keg_only "Custom patched version of wxPython, only for use by KiCad."
 
   patch :p1 do
