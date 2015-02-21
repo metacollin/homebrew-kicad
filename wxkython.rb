@@ -6,6 +6,12 @@ class Wxkython < Formula
   depends_on "pkg-config" => :build
   depends_on "wxkicad"
   
+  bottle do
+    root_url "https://electropi.mp"
+    sha1 "87734027803b0a08c5bc91530c2fbafb193d622d" => :yosemite
+    sha1 "b5387a365ff61fca85ce54418781048c36a3ea75" => :mountain_lion
+  end
+
   keg_only "Custom patched version of wxPython, only for use by KiCad."
 
   patch :p1 do
@@ -18,12 +24,13 @@ class Wxkython < Formula
 
     cd "wxPython" do
      ENV['MAC_OS_X_VERSION_MIN_REQUIRED'] = "#{MacOS.version}"
-     ENV['ARCHFLAGS'] = "-Wunused-command-line-argument-hard-error-in-future"
+     ENV['ARCHFLAGS'] = "-Wunused-command-line-argument-hard-error-in-future" 
      ENV["WXWIN"] = buildpath
      ENV["CC"] = "/usr/bin/clang"
      ENV["CXX"] = "/usr/bin/clang++"
      ENV.append_to_cflags "-stdlib=libc++"
      ENV.append "LDFLAGS", "-stdlib=libc++"  # We actually need all of these.  
+     ENV.append "LDFLAGS", "-headerpad_max_install_names" # Need for building bottles.
 
      blargs = [
       "WXPORT=osx_cocoa",

@@ -1,14 +1,21 @@
-# Documentation: https://github.com/Homebrew/homebrew/blob/master/share/doc/homebrew/Formula-Cookbook.md
-#                /usr/local/Library/Contributions/example-formula.rb
-# PLEASE REMOVE ALL GENERATED COMMENTS BEFORE SUBMITTING YOUR PULL REQUEST!
-
 class Kicadboost < Formula
   url "http://ufpr.dl.sourceforge.net/project/boost/boost/1.57.0/boost_1_57_0.tar.bz2"
   sha1 "e151557ae47afd1b43dc3fac46f8b04a8fe51c12"
 
+  bottle do
+    root_url "https://electropi.mp"
+    cellar :any
+    sha1 "cf65bfded53cedfe1b2023bd66c8de8011446e64" => :yosemite
+    sha1 "4607a1965712694d8ca5b54a3a785fbc732da3a2" => :mountain_lion
+  end
+
   keg_only "This is a temporary bandaid package for kicad and will hopefully only be needed briefly."
 
-  patch :p0, :DATA
+  option "no-patch", "Do not patch minkowski. Metacollin sanity check."
+
+  unless build.with? "no-patch"
+    patch :p0, :DATA
+  end
 
 
   def install

@@ -2,11 +2,17 @@ class Wxkicad < Formula
   url "https://downloads.sourceforge.net/project/wxpython/wxPython/3.0.2.0/wxPython-src-3.0.2.0.tar.bz2"
   sha1 "5053f3fa04f4eb3a9d4bfd762d963deb7fa46866"
 
-   depends_on "cairo" 
-   depends_on "swig" => :build
-   depends_on "pkg-config" => :build
-   depends_on "pcre" 
-   depends_on "glew" 
+  depends_on "cairo" 
+  depends_on "swig" => :build
+  depends_on "pkg-config" => :build
+  depends_on "pcre" 
+  depends_on "glew" 
+
+  bottle do
+  	root_url "https://electropi.mp"
+   	sha1 "1666175395986a71fcd0588ad31e254eb27c7cd8" => :yosemite
+  end
+
 
   keg_only "Custom patched version of wxWidgets, only for use by KiCad."
 
@@ -22,6 +28,8 @@ class Wxkicad < Formula
     ENV['ARCHFLAGS'] = "-Wunused-command-line-argument-hard-error-in-future"
     ENV.append_to_cflags "-stdlib=libc++"
     ENV.append "LDFLAGS", "-stdlib=libc++"
+    ENV.append "LDFLAGS", "-headerpad_max_install_names" # Need for building bottles.
+
 
     args = [
       "--prefix=#{prefix}",
@@ -48,34 +56,5 @@ class Wxkicad < Formula
     system "make", "install"
     end
     (prefix/"wx-build").install Dir["wx-build/*"]
-
-
-
-
-
-
-    # ohai "Now building wxpython..."
-
-    # cd "wxPython" do
-    #  ENV['MAC_OS_X_VERSION_MIN_REQUIRED'] = "#{MacOS.version}"
-    #  ENV.append_to_cflags "-stdlib=libc++"
-    #  ENV['ARCHFLAGS'] = "-Wunused-command-line-argument-hard-error-in-future"
-    #  ENV["WXWIN"] = buildpath
-
-    #  blargs = [
-    #   "WXPORT=osx_cocoa",
-    #   "WX_CONFIG=#{bin}/wx-config",
-    #   "UNICODE=1",
-    #   "BUILD_BASE=#{buildpath}"
-    #  ]
-    #  system "CC=/usr/bin/clang CXX=/usr/bin/clang++ /usr/bin/python", "setup.py",
-    #                  "build_ext",
-    #                  *blargs
-
-    #  system "CC=/usr/bin/clang CXX=/usr/bin/clang++ /usr/bin/python", "setup.py",
-    #                  "install",
-    #                  "--prefix=#{prefix}",
-    #                  *blargs
-    # end
   end
 end
