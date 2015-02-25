@@ -1,6 +1,6 @@
 # Homebrew-KiCad 
 
-Delicious and foamy --HEAD only [Homebrew](https://github.com/mxcl/homebrew) tap for [KiCad](http://www.kicad-pcb.org) and it's library.  This is intended to make it easy for OS X developers to build KiCad relatively easily.
+Delicious and foamy --HEAD only [Homebrew](https://github.com/mxcl/homebrew) tap for [KiCad](http://www.kicad-pcb.org) and it's library.  This is intended to make it easy for OS X developers to build KiCad more conveniently.
 
 **Users can now download official binaries!** Download the [official OS X nightly builds](http://downloads.kicad-pcb.org/osx/) provided by Adam Wolf (thank you!). 
 
