@@ -9,7 +9,9 @@ class Wxkython < Formula
   bottle do
     root_url "https://electropi.mp"
     sha1 "87734027803b0a08c5bc91530c2fbafb193d622d" => :yosemite
+    sha1 "060fc7b60791daa0926265696535cd69e02bffd3" => :mavericks
     sha1 "b5387a365ff61fca85ce54418781048c36a3ea75" => :mountain_lion
+    sha1 "1fca4507216ae6711a0d2db511e86bdabfcf4cb1" => :lion
   end
 
   keg_only "Custom patched version of wxPython, only for use by KiCad."

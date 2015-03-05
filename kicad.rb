@@ -2,15 +2,15 @@ require "formula"
 
 class Kicad < Formula
   homepage "http://kicad-pcb.org"
-  head "https://github.com/KiCad/kicad-source-mirror.git", :using => :git 
+  url "https://github.com/KiCad/kicad-source-mirror.git", :using => :git 
+  head "https://github.com/KiCad/kicad-source-mirror.git"
 
   depends_on "bzr" => :build
   depends_on "cmake" => :build
   depends_on "kicad-library" => :recommended
   depends_on "wxkicad" 
   depends_on "wxkython"
-  depends_on "kicadboost" => :recommended #boost with 2 lines commented out in minkowski.hpp 
-  depends_on "boost" => [:cxx11, 'with-static'] if build.without? "kicadboost" #unmodified boost
+  depends_on "boost" => ["c++11"]
   
   # I'm not sure I really believe (my own) hypothesis that this is a minkowski patch, there are
   # Other differences and it may just come down to build flags.  The default ones for homebrew cause the

@@ -11,6 +11,9 @@ class Wxkicad < Formula
   bottle do
   	root_url "https://electropi.mp"
    	sha1 "1666175395986a71fcd0588ad31e254eb27c7cd8" => :yosemite
+   	sha1 "5e38bbe2cd3dba7bcd52b0bc4da773a94c4e9b21" => :mavericks
+   	sha1 "516b7e7d2226da59c81830f3e396944eb4b90c0c" => :mountain_lion
+   	sha1 "a504e8adb05c7e203c26039639fb3754830e7f75" => :lion
   end
 
 
