@@ -5,6 +5,7 @@ class Kicad < Formula
   url "https://github.com/KiCad/kicad-source-mirror.git", :using => :git 
   head "https://github.com/KiCad/kicad-source-mirror.git"
 
+  depends_on "swig" => :build
   depends_on "bzr" => :build
   depends_on "cmake" => :build
   depends_on "kicad-library" => :recommended
