@@ -12,7 +12,6 @@ class Kicad < Formula
   depends_on "boost" => ["c++11"]
   depends_on "libiomp" if build.with? "openmp"
   depends_on "clang-omp" => :build if build.with? "openmp"
-  depends_on "qt" => ["with-qt3support"]
   depends_on "openssl"
 
   option "with-menu-icons", "Build with icons in all the menubar menus."

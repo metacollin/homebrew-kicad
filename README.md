@@ -1,8 +1,9 @@
 # Homebrew-KiCad 
 
-Delicious and foamy --HEAD only [Homebrew](https://github.com/mxcl/homebrew) tap for [KiCad](http://www.kicad-pcb.org) and it's library.  This is intended to make it easy for OS X developers to build KiCad more conveniently.
+Delicious and foamy --HEAD only [Homebrew](https://github.com/mxcl/homebrew) tap for [KiCad](http://www.kicad-pcb.org) and it's library.  This is intended to make it easy for OS X developers and users to build KiCad more conveniently and test or customize builds in ways outside the scope of the official nightly builds. 
+In other words, here be dragons.
 
-**Users can now download official binaries!** Download the [official OS X nightly builds](http://downloads.kicad-pcb.org/osx/) provided by Adam Wolf (thank you!). 
+**Regular Users should look here:** Download the [official OS X nightly builds](http://downloads.kicad-pcb.org/osx/) provided by Adam Wolf (thank you!). 
 
 Also, check out Shane Burrell's tap of [homebrew-kicadlibrarian](https://github.com/shaneburrell/homebrew-kicadlibrarian).  It's an OS X port of  [KiCad Libriarian](http://www.compuphase.com/electronics/kicadlibrarian_en.htm), a separate tool for managing footprint libraries.  
 
@@ -14,57 +15,31 @@ brew tap metacollin/kicad
 brew install kicad --HEAD
 ```
 
-## Read this before installing!
-The `kicad` formula will automatically download the latest KiCad Library files and they will reside in your Cellar like any other homebrew formula, but presently, they will be naughtily symlinked into `~/Library/Application Support/kicad` and the library table into `~/Library/Preferences/kicad folder`.  
-
-If you already have a library table there from another build of KiCad, it will be renamed to `fp-lib-table_old<random hex string>` and moved asside. If this behavior is unacceptable, before installing kicad, run:
-
-```sh
-brew install kicad-library --without-tables #do not symlink any table file into your kicad preferences
-```
-and your tables will not be touched.  
-
-If you don't care, the default behavior is to populate Your library tables with all the .pretty repos from github, and then use the github library plugin so that they will continually be updated from within KiCad itself.  If you would rather use local .pretty tables without github functionallity, run:
-
-```sh
-brew install kicad-library --with-local-tables #use local .pretty libraries
-```
-
-Finally, if you prefer to manage the library manually and don't want anything touched and no naughty symlinking of stuff outside `/usr/local`, this is all limited to the kicad-library fomula and it is an optional dependency.  Install kicad with:
-
-```sh
-brew install kicad --without-kicad-library #If you plan on managing the library manually
-```
-
-and no non-standard behavior will be done.  
-
-Once it's installed, if you want the suite of .apps symlinked into your /Applications folder, you need to run: 
-```sh
-brew linkapps kicad  #link .app bundles into /Applications
-```
-
-You're all set!
-
 ## It's good to have options
 There are a few options available to further customize your build.  
 
 ```sh
---without-webkit
-```
-This will disable the integrated webkit browser for users who want to eliminate any security risks, however small, that including a web browser within kicad might pose.
-```sh
 --with-menu-icons
 ```
-This will add icons to the menu bar items.  It's turned off by default because that is not seen very often on OS X and might be too out of place for many users.  Personally, I like them.  The difference is purely cosmetic, so use this according to personal preference.  
+This will add icons to the menu bar items.
+
+```sh
+--with-openmp
+```
+Using this flag will enable KiCad's OpenMP performance enhancements and bundle Intel's OpenMP 4.0 runtime library within the Kicad .app bundle.  This is highly experimental, but so far has not caused me a single issue.  
+
+OpenMP is an opensource multicore/multiprocessing library for speeding up CPU intensive tasks by better utalizing multiple processor cores.  The bad news is as of this writing (April 2015), neither Apple's clang nor the latest official release have OpenMP support.
+
+The good news is there is the [OpenMP®/Clang](https://clang-omp.github.io) project! And it's now part of the official homebrew repository.  
+
+This otherwise heavy-weight dependency, being part of the main homebrew repository, will make use of bottles.  I hope this will aid users and developers in testing and developing OpenMP enhancements to KiCad on OS X as clang gets closer to incorporating full OpenMP support in an official release. 
 
 ## Notes on upgrading
 KiCad is a very active project, with revisions coming out frequently (sometimes with less than 24 hours in between).  Homebrew will not detect this and it does not handle upgrading --HEAD only formulae.  If you want to stay on the bleeding edge, you can manually force an upgrade at any time using:
 ```sh
-brew reinstall kicad --HEAD --without-kicad-library #the second flag is not necessary, but saves some build time
+brew reinstall kicad --HEAD
 ```
 
 
 ###Notes on the library
-You do not have to use a version of KiCad built with this tap with the library in this tap.  You can use a binary from elsehwere and it will find and use the library installed with this formula.
-
-If kicad library fails to install, you probably, at some point, manually put some files in `~/Library/Application Support/kicad`. Please move (or simply rename) the directory if you wish to use homebrew to install a fresh version.  Homebrew, by design, cannot overwrite files so you must manually move any conflicting files out of the way.
+Library management is no longer supported with this tap.  Please see Adam Wolf's [OS X Nightlies](http://downloads.kicad-pcb.org/osx/) and download the latest kicad-extras.dmg and follow the included instructions to install the Kicad Library.  You should only need to do this once, not every time you update to new build of KiCad.  
