@@ -6,7 +6,7 @@ class Kicad < Formula
 
   depends_on "bazaar" => :build
   depends_on "cmake" => :build
-  depends_on "kicad-library" => :recommended
+  #depends_on "kicad-library" => :recommended
   depends_on "wxkicad"
   depends_on "wxkython"
   depends_on "boost" => ["c++11"]
@@ -15,7 +15,7 @@ class Kicad < Formula
   depends_on "openssl"
 
   option "with-menu-icons", "Build with icons in all the menubar menus."
-  option "without-webkit", "Turns off the integrated WebKit browser."
+ # option "without-webkit", "Turns off the integrated WebKit browser."
   option "with-openmp", "Enables multicore performance enhancements using OpenMP 4.0.  Highly experimental."
 
   if build.with? "openmp"
@@ -55,8 +55,8 @@ class Kicad < Formula
       ]
 
       if build.with? "openmp"
-        args << "-DCMAKE_C_COMPILER=/usr/local/opt/clang-omp/libexec/bin/clang"
-        args << "-DCMAKE_CXX_COMPILER=/usr/local/opt/clang-omp/libexec/bin/clang++"
+        args << "-DCMAKE_C_COMPILER=#{Formula["clang-omp"].libexec}/bin/clang"
+        args << "-DCMAKE_CXX_COMPILER=#{Formula["clang-omp"].libexec}/bin/clang++"
       else
         args << "-DCMAKE_C_COMPILER=/usr/bin/clang"
         args << "-DCMAKE_CXX_COMPILER=/usr/bin/clang++"
@@ -74,8 +74,7 @@ class Kicad < Formula
       items unselectable.  Until it is fixed, you can use your keyboard's arrow
       keys after clicking the dropdown menu to select the option you want.
 
-      A workaround for the frustration this bug may cause is performing a
-      google image search for munchkin kittens.
+      Sorry :(.
     EOS
   end
 end
@@ -93,7 +92,7 @@ index 154aaae..1e7dd07 100644
 + set(OPENMP_FOUND ON)
 + set(OpenMP_C_FLAGS "-fopenmp" CACHE STRING "C compiler flags for OpenMP parallization" FORCE)
 + set(OpenMP_CXX_FLAGS "-fopenmp" CACHE STRING "C++ compiler flags for OpenMP parallization" FORCE)
-+ include_directories(/usr/local/opt/libiomp/include)
++ include_directories(/usr/local/opt/libiomp/include/libiomp)
 + link_directories(/usr/local/opt/libiomp/lib)
 + execute_process(COMMAND ditto /usr/local/opt/libiomp/lib/libiomp5.dylib ${CMAKE_BINARY_DIR}/bin/libiomp5.dylib)
 +    endif()
