@@ -1,24 +1,23 @@
 class Wxkython < Formula
   url "https://downloads.sourceforge.net/project/wxpython/wxPython/3.0.2.0/wxPython-src-3.0.2.0.tar.bz2"
   sha1 "5053f3fa04f4eb3a9d4bfd762d963deb7fa46866"
+  homepage "https://kicad-pcb.org"
 
   depends_on "swig" => :build
   depends_on "pkg-config" => :build
   depends_on "wxkicad"
-  
+
   bottle do
     root_url "https://electropi.mp"
-    sha1 "87734027803b0a08c5bc91530c2fbafb193d622d" => :yosemite
-    sha1 "060fc7b60791daa0926265696535cd69e02bffd3" => :mavericks
-    sha1 "b5387a365ff61fca85ce54418781048c36a3ea75" => :mountain_lion
-    sha1 "1fca4507216ae6711a0d2db511e86bdabfcf4cb1" => :lion
+    revision 1
+    sha256 "8de0a3d6258cd8b82e94f162cb899c0573f3256edffea51493270371ca3018c7" => :yosemite
   end
 
   keg_only "Custom patched version of wxPython, only for use by KiCad."
 
   patch :p1 do
-     url "https://gist.githubusercontent.com/metacollin/2d5760743df73c939d53/raw/37c8f5f823c60f76ae30d6acf54ca03f1b11f4f9/wxp.patch"
-     sha1 "00333265692b88d22be33c15220daeda6d5c3b28"
+     url "https://gist.githubusercontent.com/metacollin/2d5760743df73c939d53/raw/cfbaa7965a21cce5f63f0fa857187c5fd33cd65e/wxp.patch"
+     sha256 "d863576addb3e958cd8780ebf70fd710f73477db6322efb2c65f670543ab6bab"
   end
 
   def install
@@ -26,12 +25,12 @@ class Wxkython < Formula
 
     cd "wxPython" do
      ENV['MAC_OS_X_VERSION_MIN_REQUIRED'] = "#{MacOS.version}"
-     ENV['ARCHFLAGS'] = "-Wunused-command-line-argument-hard-error-in-future" 
+     ENV['ARCHFLAGS'] = "-Wunused-command-line-argument-hard-error-in-future"
      ENV["WXWIN"] = buildpath
-     ENV["CC"] = "/usr/bin/clang"
-     ENV["CXX"] = "/usr/bin/clang++"
+     ENV["CC"] = "#{ENV.cc}"
+     ENV["CXX"] = "#{ENV.cxx}"
      ENV.append_to_cflags "-stdlib=libc++"
-     ENV.append "LDFLAGS", "-stdlib=libc++"  # We actually need all of these.  
+     ENV.append "LDFLAGS", "-stdlib=libc++"  # We actually need all of these.
      ENV.append "LDFLAGS", "-headerpad_max_install_names" # Need for building bottles.
 
      blargs = [

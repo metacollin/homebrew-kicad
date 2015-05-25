@@ -6,7 +6,6 @@ class Kicad < Formula
 
   depends_on "bazaar" => :build
   depends_on "cmake" => :build
-  #depends_on "kicad-library" => :recommended
   depends_on "wxkicad"
   depends_on "wxkython"
   depends_on "boost" => ["c++11"]
@@ -15,7 +14,6 @@ class Kicad < Formula
   depends_on "openssl"
 
   option "with-menu-icons", "Build with icons in all the menubar menus."
- # option "without-webkit", "Turns off the integrated WebKit browser."
   option "with-openmp", "Enables multicore performance enhancements using OpenMP 4.0.  Highly experimental."
 
   if build.with? "openmp"
@@ -58,8 +56,8 @@ class Kicad < Formula
         args << "-DCMAKE_C_COMPILER=#{Formula["clang-omp"].libexec}/bin/clang"
         args << "-DCMAKE_CXX_COMPILER=#{Formula["clang-omp"].libexec}/bin/clang++"
       else
-        args << "-DCMAKE_C_COMPILER=/usr/bin/clang"
-        args << "-DCMAKE_CXX_COMPILER=/usr/bin/clang++"
+        args << "-DCMAKE_C_COMPILER=#{ENV.cc}"
+        args << "-DCMAKE_CXX_COMPILER=#{ENV.cc}"
       end
 
         system "cmake", "../", *args
@@ -73,7 +71,6 @@ class Kicad < Formula
       There is a bug in wx that causes certain dropdown menus to have all their
       items unselectable.  Until it is fixed, you can use your keyboard's arrow
       keys after clicking the dropdown menu to select the option you want.
-
       Sorry :(.
     EOS
   end
@@ -99,4 +96,3 @@ index 154aaae..1e7dd07 100644
 +
      if( MINGW )
          set( CMAKE_EXE_LINKER_FLAGS_RELEASE "-s" )
- 
