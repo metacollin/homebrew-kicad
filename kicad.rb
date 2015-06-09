@@ -60,6 +60,10 @@ class Kicad < Formula
         args << "-DCMAKE_CXX_COMPILER=#{ENV.cc}"
       end
 
+      if build.with? "menu-icons"
+        args << "-DUSE_IMAGES_IN_MENUS=ON"
+      end
+
         system "cmake", "../", *args
         system "make", "-j6"
         system "make install"
