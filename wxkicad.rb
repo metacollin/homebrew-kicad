@@ -9,50 +9,51 @@ class Wxkicad < Formula
   depends_on "pcre"
   depends_on "glew"
 
-  bottle do
-    root_url "https://electropi.mp"
-    revision 1
-    sha256 "1ca8a02bbb75d35b9dc956d257b6b1b6953ec0dae7ee6b51e6a9e56c72dd9e42" => :yosemite
-  end
-
   keg_only "Custom patched version of wxWidgets, only for use by KiCad."
+
+  bottle do
+    revision 2
+    sha256 "4403d4053a337349bdd5dd0f60ae348be46656d9462a7582237092756f9505af" => :yosemite
+  end
 
   patch :p1 do
      url "https://gist.githubusercontent.com/metacollin/2d5760743df73c939d53/raw/cfbaa7965a21cce5f63f0fa857187c5fd33cd65e/wxp.patch"
      sha256 "d863576addb3e958cd8780ebf70fd710f73477db6322efb2c65f670543ab6bab"
   end
 
+  fails_with :gcc
+  fails_with :llvm
+
    def install
     mkdir "wx-build" do
-    ENV['MAC_OS_X_VERSION_MIN_REQUIRED'] = "#{MacOS.version}"
-    ENV['ARCHFLAGS'] = "-Wunused-command-line-argument-hard-error-in-future"
-    ENV.append_to_cflags "-stdlib=libc++"
-    ENV.append "LDFLAGS", "-stdlib=libc++"
-    ENV.append "LDFLAGS", "-headerpad_max_install_names" # Need for building bottles.
+      ENV['MAC_OS_X_VERSION_MIN_REQUIRED'] = "#{MacOS.version}"
+      ENV.append "ARCHFLAGS", "-Wunused-command-line-argument-hard-error-in-future"
+      ENV.append "LDFLAGS", "-headerpad_max_install_names" # Need for building bottles.
+      ENV.libcxx if ENV.compiler == :clang
 
-    args = [
-      "--prefix=#{prefix}",
-      "--with-opengl",
-      "--enable-aui",
-      "--enable-utf8",
-      "--enable-html",
-      "--enable-stl",
-      "--with-libjpeg=builtin",
-      "--with-libpng=builtin",
-      "--with-regex=builtin",
-      "--with-libtiff=builtin",
-      "--with-zlib=builtin",
-      "--with-expat=builtin",
-      "--without-liblzma",
-      "--with-macosx-version-min=#{MacOS.version}",
-      "--enable-universal_binary=i386,x86_64",
-      "CC=#{ENV.cc}",
-      "CXX=#{ENV.cxx}"
+      args = [
+        "--prefix=#{prefix}",
+        "--with-opengl",
+        "--enable-aui",
+        "--enable-utf8",
+        "--enable-html",
+        "--enable-stl",
+        "--with-libjpeg=builtin",
+        "--with-libpng=builtin",
+        "--with-regex=builtin",
+        "--with-libtiff=builtin",
+        "--with-zlib=builtin",
+        "--with-expat=builtin",
+        "--without-liblzma",
+        "--with-macosx-version-min=#{MacOS.version}",
+        "--enable-universal_binary=i386,x86_64",
+        "CC=#{ENV.cc}",
+        "CXX=#{ENV.cxx}"
       ]
 
-    system "../configure", *args
-    system "make", "-j6"
-    system "make", "install"
+      system "../configure", *args
+      system "make", "-j6"
+      system "make", "install"
     end
     (prefix/"wx-build").install Dir["wx-build/*"]
   end

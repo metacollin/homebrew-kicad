@@ -7,14 +7,19 @@ class Kicad < Formula
   depends_on "bazaar" => :build
   depends_on "cmake" => :build
   depends_on "wxkicad"
-  depends_on "wxkython"
-  depends_on "boost" => ["c++11"]
+  depends_on "wxkython" if build.with? "python-scripting"
+  depends_on :python if build.with? "python-scripting"
+  depends_on "boost" => "c++11"
   depends_on "libiomp" if build.with? "openmp"
   depends_on "clang-omp" => :build if build.with? "openmp"
   depends_on "openssl"
 
   option "with-menu-icons", "Build with icons in all the menubar menus."
   option "with-openmp", "Enables multicore performance enhancements using OpenMP 4.0.  Highly experimental."
+  option "without-python-scripting", "Disables python scripting and python scripting modules for KiCad."
+
+  fails_with :gcc
+  fails_with :llvm
 
   if build.with? "openmp"
     patch :DATA
@@ -22,35 +27,35 @@ class Kicad < Formula
 
   def install
     # Homebrew insists on chmoding _everything_ 0444, and install_name_tool will be unable to properly bundle them in the .app.
-    # Without these two lines, you get the delightful behavior of the formula failing at the very last possible moment,
-    # ensuring the maximum possible time will be wasted before the build failes and the output erased. ಠ_ಠ Homebrew.
-    chmod_R(0744, Dir.glob("#{Formula["wxkython"].lib}/python2.7/site-packages/*"))
+    if build.with? "python-scripting"
+      chmod_R(0744, Dir.glob("#{Formula["wxkython"].lib}/python2.7/site-packages/*"))
+    end
     chmod_R(0744, Dir.glob("#{Formula["wxkicad"].lib}/*"))
 
     mkdir "build" do
-      ENV.prepend_create_path "PYTHONPATH", "#{Formula["wxkython"].lib}/python2.7/site-packages" # Need this to find wxpython.
+      if build.with? "python-scripting"
+        ENV.prepend_create_path "PYTHONPATH", "#{Formula["wxkython"].lib}/python2.7/site-packages" # Need this to find wxpython.
+      end
       ENV['ARCHFLAGS'] = "-Wunused-command-line-argument-hard-error-in-future" # Need this for 10.7 and 10.8.
-      ENV.libcxx
-      ENV.append_to_cflags "-stdlib=libc++  -std=cxx11"  # We probably don't need all of these.
-      ENV.append "CXXFLAGS", "-stdlib=libc++ -std=cxx11"
-      ENV.append "LDFLAGS", "-stdlib=libc++  -std=cxx11" # But metacollin hasn't bothered to figure that out yet.
+      ENV.libcxx if ENV.compiler == :clang
 
       args = %W[
         -DCMAKE_INSTALL_PREFIX=#{prefix}
         -DCMAKE_OSX_DEPLOYMENT_TARGET=#{MacOS.version}
         -DwxWidgets_CONFIG_EXECUTABLE=#{Formula["wxkicad"].bin}/wx-config
-        -DPYTHON_EXECUTABLE=/usr/bin/python
-        -DPYTHON_LIBRARY=/usr/lib/libpython.dylib
-        -DPYTHON_SITE_PACKAGE_PATH=#{Formula["wxkython"].lib}/python2.7/site-packages
-        -DKICAD_SCRIPTING=ON
-        -DKICAD_SCRIPTING_MODULES=ON
-        -DKICAD_SCRIPTING_WXPYTHON=ON
         -DCMAKE_BUILD_TYPE=Release
         -DCMAKE_CXX_FLAGS=-stdlib=libc++
         -DCMAKE_C_FLAGS=-stdlib=libc++
         -DKICAD_REPO_NAME=brewed_product
         -DKICAD_SKIP_BOOST=ON
       ]
+
+      if build.with? "python-scripting"
+        args << "-DPYTHON_SITE_PACKAGE_PATH=#{Formula["wxkython"].lib}/python2.7/site-packages"
+        args << "-DKICAD_SCRIPTING=ON"
+        args << "-DKICAD_SCRIPTING_MODULES=ON"
+        args << "-DKICAD_SCRIPTING_WXPYTHON=ON"
+      end
 
       if build.with? "openmp"
         args << "-DCMAKE_C_COMPILER=#{Formula["clang-omp"].libexec}/bin/clang"
@@ -64,8 +69,8 @@ class Kicad < Formula
         args << "-DUSE_IMAGES_IN_MENUS=ON"
       end
 
-        system "cmake", "../", *args
-        system "make", "-j6"
+        system "cmake", "../", *(std_cmake_args + args)
+        system "make"
         system "make install"
       end
     end
