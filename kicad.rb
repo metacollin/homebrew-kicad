@@ -1,7 +1,6 @@
-require "formula"
-
 class Kicad < Formula
-  homepage "http://kicad-pcb.org"
+  desc "Electronic Design CAD Suite"
+  homepage "http://wwwkicad-pcb.org"
   head "https://github.com/KiCad/kicad-source-mirror.git"
 
   depends_on "bazaar" => :build
@@ -9,7 +8,7 @@ class Kicad < Formula
   depends_on "wxkicad"
   depends_on "wxkython" if build.with? "python-scripting"
   depends_on :python if build.with? "python-scripting"
-  depends_on "boost" => "c++11"
+  depends_on "boost"
   depends_on "libiomp" if build.with? "openmp"
   depends_on "clang-omp" => :build if build.with? "openmp"
   depends_on "openssl"
@@ -37,17 +36,21 @@ class Kicad < Formula
         ENV.prepend_create_path "PYTHONPATH", "#{Formula["wxkython"].lib}/python2.7/site-packages" # Need this to find wxpython.
       end
       ENV['ARCHFLAGS'] = "-Wunused-command-line-argument-hard-error-in-future" # Need this for 10.7 and 10.8.
-      ENV.libcxx if ENV.compiler == :clang
+      
+      if MacOS.version < :mavericks
+        ENV.libstdcxx
+      else
+        ENV.libcxx
+      end
 
       args = %W[
         -DCMAKE_INSTALL_PREFIX=#{prefix}
         -DCMAKE_OSX_DEPLOYMENT_TARGET=#{MacOS.version}
         -DwxWidgets_CONFIG_EXECUTABLE=#{Formula["wxkicad"].bin}/wx-config
         -DCMAKE_BUILD_TYPE=Release
-        -DCMAKE_CXX_FLAGS=-stdlib=libc++
-        -DCMAKE_C_FLAGS=-stdlib=libc++
         -DKICAD_REPO_NAME=brewed_product
         -DKICAD_SKIP_BOOST=ON
+        -DBoost_USE_STATIC_LIBS=ON
       ]
 
       if build.with? "python-scripting"
@@ -55,6 +58,10 @@ class Kicad < Formula
         args << "-DKICAD_SCRIPTING=ON"
         args << "-DKICAD_SCRIPTING_MODULES=ON"
         args << "-DKICAD_SCRIPTING_WXPYTHON=ON"
+      else
+        args << "-DKICAD_SCRIPTING=OFF"
+        args << "-DKICAD_SCRIPTING_MODULES=OFF"
+        args << "-DKICAD_SCRIPTING_WXPYTHON="
       end
 
       if build.with? "openmp"
@@ -62,7 +69,7 @@ class Kicad < Formula
         args << "-DCMAKE_CXX_COMPILER=#{Formula["clang-omp"].libexec}/bin/clang++"
       else
         args << "-DCMAKE_C_COMPILER=#{ENV.cc}"
-        args << "-DCMAKE_CXX_COMPILER=#{ENV.cc}"
+        args << "-DCMAKE_CXX_COMPILER=#{ENV.cxx}"
       end
 
       if build.with? "menu-icons"
@@ -77,10 +84,7 @@ class Kicad < Formula
 
   def caveats
     <<-EOS.undent
-      There is a bug in wx that causes certain dropdown menus to have all their
-      items unselectable.  Until it is fixed, you can use your keyboard's arrow
-      keys after clicking the dropdown menu to select the option you want.
-      Sorry :(.
+    Kicad Extras can be found at http://downloads.kicad-pcb.org/osx/
     EOS
   end
 end
