@@ -11,10 +11,13 @@ class Wxkicad < Formula
 
   keg_only "Custom patched version of wxWidgets, only for use by KiCad."
 
-  bottle do
-    revision 2
-    sha256 "4403d4053a337349bdd5dd0f60ae348be46656d9462a7582237092756f9505af" => :yosemite
-  end
+
+ # bottle do
+ #   root_url "https://electropi.mp"
+ #   revision 3
+ #   sha256 "c9e92d9a896e3558a684345e4ce20d123b265487965c3cfd29673ea64381cee7" => :yosemite
+ #   sha256 "3553e767d5aa30bbd43004316a755e736f694775de8b12b58b0ecc5157a97654" => :lion
+ # end
 
   patch :p1 do
      url "https://gist.githubusercontent.com/metacollin/2d5760743df73c939d53/raw/cfbaa7965a21cce5f63f0fa857187c5fd33cd65e/wxp.patch"
@@ -29,7 +32,12 @@ class Wxkicad < Formula
       ENV['MAC_OS_X_VERSION_MIN_REQUIRED'] = "#{MacOS.version}"
       ENV.append "ARCHFLAGS", "-Wunused-command-line-argument-hard-error-in-future"
       ENV.append "LDFLAGS", "-headerpad_max_install_names" # Need for building bottles.
-      ENV.libcxx if ENV.compiler == :clang
+
+      if MacOS.version < :mavericks
+        ENV.libstdcxx
+      else
+        ENV.libcxx
+      end
 
       args = [
         "--prefix=#{prefix}",

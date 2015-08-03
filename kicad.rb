@@ -1,4 +1,4 @@
-class Kicad < Formula
+  class Kicad < Formula
   desc "Electronic Design CAD Suite"
   homepage "http://wwwkicad-pcb.org"
   head "https://github.com/KiCad/kicad-source-mirror.git"
@@ -36,7 +36,7 @@ class Kicad < Formula
         ENV.prepend_create_path "PYTHONPATH", "#{Formula["wxkython"].lib}/python2.7/site-packages" # Need this to find wxpython.
       end
       ENV['ARCHFLAGS'] = "-Wunused-command-line-argument-hard-error-in-future" # Need this for 10.7 and 10.8.
-      
+     
       if MacOS.version < :mavericks
         ENV.libstdcxx
       else
@@ -47,11 +47,17 @@ class Kicad < Formula
         -DCMAKE_INSTALL_PREFIX=#{prefix}
         -DCMAKE_OSX_DEPLOYMENT_TARGET=#{MacOS.version}
         -DwxWidgets_CONFIG_EXECUTABLE=#{Formula["wxkicad"].bin}/wx-config
-        -DCMAKE_BUILD_TYPE=Release
         -DKICAD_REPO_NAME=brewed_product
         -DKICAD_SKIP_BOOST=ON
         -DBoost_USE_STATIC_LIBS=ON
       ]
+
+      if build.with? "debug"
+        args << "-DCMAKE_BUILD_TYPE=Debug"
+        args << "-DwxWidgets_USE_DEBUG=ON"
+      else
+        args << "-DCMAKE_BUILD_TYPE=Release"
+      end
 
       if build.with? "python-scripting"
         args << "-DPYTHON_SITE_PACKAGE_PATH=#{Formula["wxkython"].lib}/python2.7/site-packages"
@@ -61,12 +67,12 @@ class Kicad < Formula
       else
         args << "-DKICAD_SCRIPTING=OFF"
         args << "-DKICAD_SCRIPTING_MODULES=OFF"
-        args << "-DKICAD_SCRIPTING_WXPYTHON="
+        args << "-DKICAD_SCRIPTING_WXPYTHON=OFF"
       end
 
       if build.with? "openmp"
-        args << "-DCMAKE_C_COMPILER=#{Formula["clang-omp"].libexec}/bin/clang"
-        args << "-DCMAKE_CXX_COMPILER=#{Formula["clang-omp"].libexec}/bin/clang++"
+        args << "-DCMAKE_C_COMPILER=#{Formula["clang-omp"].bin}/clang-omp"
+        args << "-DCMAKE_CXX_COMPILER==#{Formula["clang-omp"].bin}/clang-omp++"
       else
         args << "-DCMAKE_C_COMPILER=#{ENV.cc}"
         args << "-DCMAKE_CXX_COMPILER=#{ENV.cxx}"

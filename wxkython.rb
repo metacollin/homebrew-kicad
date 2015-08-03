@@ -10,10 +10,11 @@ class Wxkython < Formula
 
   keg_only "Custom patched version of wxPython, only for use by KiCad."
 
-  bottle do
-    revision 2
-    sha256 "4a57905072c3811dc5a81a618587ed84a5f86a3aef8ddc7c5962fb411db7b298" => :yosemite
-  end
+#  bottle do
+#    root_url "https://electropi.mp"
+#    revision 2
+#    sha256 "4a57905072c3811dc5a81a618587ed84a5f86a3aef8ddc7c5962fb411db7b298" => :yosemite
+#  end
 
   patch :p1 do
      url "https://gist.githubusercontent.com/metacollin/2d5760743df73c939d53/raw/cfbaa7965a21cce5f63f0fa857187c5fd33cd65e/wxp.patch"
@@ -28,8 +29,13 @@ class Wxkython < Formula
       ENV['MAC_OS_X_VERSION_MIN_REQUIRED'] = "#{MacOS.version}"
       ENV.append "ARCHFLAGS", "-Wunused-command-line-argument-hard-error-in-future"
       ENV["WXWIN"] = buildpath
-      ENV.libcxx if ENV.compiler == :clang
       ENV.append "LDFLAGS", "-headerpad_max_install_names" # Need for building bottles.
+
+      if MacOS.version < :mavericks
+        ENV.libstdcxx
+      else
+        ENV.libcxx
+      end
 
       blargs = [
         "WXPORT=osx_cocoa",
