@@ -1,6 +1,6 @@
   class Kicad < Formula
   desc "Electronic Design CAD Suite"
-  homepage "http://wwwkicad-pcb.org"
+  homepage "http://www.kicad-pcb.org"
   head "https://github.com/KiCad/kicad-source-mirror.git"
 
   depends_on "bazaar" => :build
@@ -13,12 +13,13 @@
   depends_on "clang-omp" => :build if build.with? "openmp"
   depends_on "openssl"
 
-  option "with-menu-icons", "Build with icons in all the menubar menus."
+  option "without-menu-icons", "Build without icons menus."
   option "with-openmp", "Enables multicore performance enhancements using OpenMP 4.0.  Highly experimental."
-  option "without-python-scripting", "Disables python scripting and python scripting modules for KiCad."
+  option "with-python-scripting", "Enables python scripting and python scripting modules for KiCad."
 
   fails_with :gcc
   fails_with :llvm
+  #needs :cxx11
 
   if build.with? "openmp"
     patch :DATA
@@ -36,7 +37,7 @@
         ENV.prepend_create_path "PYTHONPATH", "#{Formula["wxkython"].lib}/python2.7/site-packages" # Need this to find wxpython.
       end
       ENV['ARCHFLAGS'] = "-Wunused-command-line-argument-hard-error-in-future" # Need this for 10.7 and 10.8.
-     
+
       if MacOS.version < :mavericks
         ENV.libstdcxx
       else
@@ -71,8 +72,8 @@
       end
 
       if build.with? "openmp"
-        args << "-DCMAKE_C_COMPILER=#{Formula["clang-omp"].bin}/clang-omp"
-        args << "-DCMAKE_CXX_COMPILER==#{Formula["clang-omp"].bin}/clang-omp++"
+        args << "-DCMAKE_C_COMPILER=#{HOMEBREW_PREFIX}/bin/clang-omp"
+        args << "-DCMAKE_CXX_COMPILER=#{HOMEBREW_PREFIX}/bin/clang-omp++"
       else
         args << "-DCMAKE_C_COMPILER=#{ENV.cc}"
         args << "-DCMAKE_CXX_COMPILER=#{ENV.cxx}"
