@@ -66,7 +66,7 @@
         args << "-DKICAD_SCRIPTING_MODULES=ON"
         args << "-DKICAD_SCRIPTING_WXPYTHON=ON"
         ENV["PYTHON_EX"] = which "python"
-        args << "-DPYTHON_EXECUTABLE=#{ENV[".PYTHON_EX"]}"
+        args << "-DPYTHON_EXECUTABLE=#{ENV["PYTHON_EX"]}"
       else
         args << "-DKICAD_SCRIPTING=OFF"
         args << "-DKICAD_SCRIPTING_MODULES=OFF"
