@@ -65,8 +65,9 @@
         args << "-DKICAD_SCRIPTING=ON"
         args << "-DKICAD_SCRIPTING_MODULES=ON"
         args << "-DKICAD_SCRIPTING_WXPYTHON=ON"
-        PYTHON_EX = which "python"
-        args << "-DPYTHON_EXECUTABLE=#{PYTHON_EX}"
+        python_ex = which "python"
+        args << "-DPYTHON_EXECUTABLE=#{PYTHON_EX}"-
+        3.
       else
         args << "-DKICAD_SCRIPTING=OFF"
         args << "-DKICAD_SCRIPTING_MODULES=OFF"
