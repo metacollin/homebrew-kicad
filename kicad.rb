@@ -65,6 +65,7 @@
         args << "-DKICAD_SCRIPTING=ON"
         args << "-DKICAD_SCRIPTING_MODULES=ON"
         args << "-DKICAD_SCRIPTING_WXPYTHON=ON"
+        args << "-DPYTHON_EXECUTABLE=`which python`"
       else
         args << "-DKICAD_SCRIPTING=OFF"
         args << "-DKICAD_SCRIPTING_MODULES=OFF"
