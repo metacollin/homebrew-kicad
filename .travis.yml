@@ -1,10 +1,5 @@
 
-language: ruby
-rvm: system
-sudo: required
-services: docker
-os: linux
-
+language: objective-c
 matrix:
   include:
     - env: OSX=10.11
@@ -21,20 +16,21 @@ matrix:
       rvm: system
 
 before_install:
-  - export TRAVIS_COMMIT=$(git rev-parse --verify -q HEAD)
-  - cd /usr/local
-  - sudo rm -rf /usr/local/.git/refs /usr/local/.git/packed-refs
-  - sudo rsync -az "$TRAVIS_BUILD_DIR/" /usr/local/
-  - export TRAVIS_BUILD_DIR="/usr/local"
-  - sudo chown -R $USER /usr/local
-  - env | grep TRAVIS_
   - if [ -f ".git/shallow" ]; then travis_retry git fetch --unshallow; fi
-  - git reset --hard $TRAVIS_COMMIT
-  - git clean -qxdff
+  - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then
+      sudo chown -R $USER $(brew --repo);
+      brew update;
+      ln -s $PWD $(brew --repo)/Library/Taps/metacollin/homebrew-kicad;
+      cd $(brew --repo)/Library/Taps/metacollin/homebrew-kicad;
+      export TRAVIS_BUILD_DIR="$(brew --repo)/Library/Taps/metacollin/homebrew-kicad";
+    fi
+  - env | grep TRAVIS | tee /tmp/travis.env
 
 script:
-  - brew test-bot
-
+  - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then
+      brew test-bot --tap=homebrew/science;
+    fi
+    
 notifications:
   email:
     on_success: never
