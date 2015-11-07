@@ -1,45 +1,37 @@
-# Homebrew-KiCad 
+# Homebrew KiCad EDA Suite 
+_Now stable!_
 
-Delicious and foamy --HEAD only [Homebrew](https://github.com/mxcl/homebrew) tap for [KiCad](http://www.kicad-pcb.org) and it's library.  This is intended to make it easy for OS X developers and users to build KiCad more conveniently and test or customize builds in ways outside the scope of the official nightly builds. 
-In other words, here be dragons.
+Delicious and foamy ~~--HEAD  only~~ stable [Homebrew](https://github.com/mxcl/homebrew) tap for [KiCad](http://www.kicad-pcb.org) and it's library.  This is intended for anyone who wants to customize their build of KiCad, build latest stable release optimized for their specific version of OS X and using the latest version of boost and other dependencies.  
 
-**Regular Users should look here:** Download the [official OS X nightly builds](http://downloads.kicad-pcb.org/osx/) provided by Adam Wolf (thank you!). 
-
-Also, check out Shane Burrell's tap of [homebrew-kicadlibrarian](https://github.com/shaneburrell/homebrew-kicadlibrarian).  It's an OS X port of  [KiCad Libriarian](http://www.compuphase.com/electronics/kicadlibrarian_en.htm), a separate tool for managing footprint libraries.  
-
-## Installation
-
-Installation is simple and much like any other tap, but please read the next section carefully first.  There are certain options you may wish to enable or disable.  Once you're sure, go head and:
+## Installation is simple...
 ```sh
 brew tap metacollin/kicad
-brew install kicad --HEAD
+brew install kicad
 ```
 
-## It's good to have options
-There are a few options available to further customize your build.  
+## ...but it's good to have options.
+Customizations:
 
 ```sh
---with-menu-icons
+--without-menu-icons # Turn off menubar and contextual menu icons
+--without-default-paths # Use /usr/local for support files
+--without-python # Turn off python scripting
+--HEAD # Builds the latest development version of KiCad.
+--debug # Build with debugging turned on
 ```
-This will add icons to the menu bar items.
-
-```sh
---with-openmp
-```
-Using this flag will enable KiCad's OpenMP performance enhancements and bundle Intel's OpenMP 4.0 runtime library within the Kicad .app bundle.  This is highly experimental, but so far has not caused me a single issue.  
-
-OpenMP is an opensource multicore/multiprocessing library for speeding up CPU intensive tasks by better utalizing multiple processor cores.  The bad news is as of this writing (April 2015), neither Apple's clang nor the latest official release have OpenMP support.
-
-The good news is there is the [OpenMP®/Clang](https://clang-omp.github.io) project! And it's now part of the official homebrew repository.  
-
-This otherwise heavy-weight dependency, being part of the main homebrew repository, will make use of bottles.  I hope this will aid users and developers in testing and developing OpenMP enhancements to KiCad on OS X as clang gets closer to incorporating full OpenMP support in an official release. 
-
-## Notes on upgrading
-KiCad is a very active project, with revisions coming out frequently (sometimes with less than 24 hours in between).  Homebrew will not detect this and it does not handle upgrading --HEAD only formulae.  If you want to stay on the bleeding edge, you can manually force an upgrade at any time using:
-```sh
-brew reinstall kicad --HEAD
-```
-
 
 ###Notes on the library
-Library management is no longer supported with this tap.  Please see Adam Wolf's [OS X Nightlies](http://downloads.kicad-pcb.org/osx/) and download the latest kicad-extras.dmg and follow the included instructions to install the Kicad Library.  You should only need to do this once, not every time you update to new build of KiCad.  
+By default, this formula doesn't handle the KiCad Library files.  However, you can tell the formula to download and install the latest KiCad support files for you by using the `--without-default-paths` option.  This will "brew-ify" KiCad by changing its search paths to
+
+`$(brew --preix)/etc/kicad`
+
+for both library files and user preferences and, if necessary, installing files.  Existing files will not be overwritten.  
+
+The exact paths will be confirmed and displayed at the end of the build as well.  
+
+Pcbnew will prompt you to download the 3D models and footprints on first run, so using `--without-default-paths` is the most painless automated way to use this tap, but it is not default as it will not find files from existing installs (via homebrew or elsewhere).
+
+If you want to install the support files in the default locations, please download the latest [OS X Nightlies](http://downloads.kicad-pcb.org/osx/) 
+of KiCad and KiCad Extras, and drag the kicad and modules folders as instructed in the disk images. 
+
+Note: wxkicad is deprecated and should be removed if you have it.  It remains in the tap as it is used as a dependency by Shane Burrell's tap of [homebrew-kicadlibrarian](https://github.com/shaneburrell/homebrew-kicadlibrarian).  It's an OS X port of  [KiCad Libriarian](http://www.compuphase.com/electronics/kicadlibrarian_en.htm), a separate tool for managing footprint libraries.  

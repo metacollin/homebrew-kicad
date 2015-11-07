@@ -10,7 +10,7 @@
   depends_on :python if build.with? "python-scripting"
   depends_on "boost"
   depends_on "libiomp" if build.with? "openmp"
-  depends_on "clang-omp" => :build if build.with? "openmp"
+  depends_on "clang-omp"
   depends_on "openssl"
 
   option "without-menu-icons", "Build without icons menus."
@@ -21,9 +21,8 @@
   fails_with :llvm
   #needs :cxx11
 
-  if build.with? "openmp"
+
     patch :DATA
-  end
 
   def install
     # Homebrew insists on chmoding _everything_ 0444, and install_name_tool will be unable to properly bundle them in the .app.
@@ -99,22 +98,200 @@
 end
 
 __END__
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 154aaae..1e7dd07 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -179,6 +179,15 @@ if( CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
-         endif()
-     endif()
+diff --git a/common/project.cpp b/common/project.cpp
+index ebf8f13..9a706a0 100644
+--- a/common/project.cpp
++++ b/common/project.cpp
+@@ -227,6 +227,7 @@ static bool copy_pro_file_template( const SEARCH_STACK& aSearchS, const wxString
+     }
  
-+   if( APPLE )
-+ set(OPENMP_FOUND ON)
-+ set(OpenMP_C_FLAGS "-fopenmp" CACHE STRING "C compiler flags for OpenMP parallization" FORCE)
-+ set(OpenMP_CXX_FLAGS "-fopenmp" CACHE STRING "C++ compiler flags for OpenMP parallization" FORCE)
-+ include_directories(/usr/local/opt/libiomp/include/libiomp)
-+ link_directories(/usr/local/opt/libiomp/lib)
-+ execute_process(COMMAND ditto /usr/local/opt/libiomp/lib/libiomp5.dylib ${CMAKE_BINARY_DIR}/bin/libiomp5.dylib)
-+    endif()
+     wxString templateFile = wxT( "kicad." ) + ProjectFileExtension;
++    wxString pcbFile = wxT( "kicad." ) + KiCadPcbFileExtension;
+ 
+     wxString kicad_pro_template = aSearchS.FindValidPath( templateFile );
+ 
+@@ -253,6 +254,9 @@ static bool copy_pro_file_template( const SEARCH_STACK& aSearchS, const wxString
+ 
+     DBG( printf( "%s: using template file '%s' as project file.\n", __func__, TO_UTF8( kicad_pro_template ) );)
+ 
 +
-     if( MINGW )
-         set( CMAKE_EXE_LINKER_FLAGS_RELEASE "-s" )
++    wxString kicad_pcb_template = aSearchS.FindValidPath( pcbFile );
++
+     // Verify aDestination can be created. if this is not the case, wxCopyFile
+     // will generate a crappy log error message, and we *do not want* this kind
+     // of stupid message
+@@ -260,7 +264,20 @@ static bool copy_pro_file_template( const SEARCH_STACK& aSearchS, const wxString
+     bool success = true;
+ 
+     if( fn.IsOk() && fn.IsDirWritable() )
++    {
+         success = wxCopyFile( kicad_pro_template, aDestination );
++        if ( !kicad_pcb_template )
++        {
++        }
++        else
++        {
++
++            wxString aDest = aDestination;
++            aDest.Replace(ProjectFileExtension, KiCadPcbFileExtension);
++            wxCopyFile( kicad_pcb_template, aDest);
++        }
++        
++    }
+     else
+     {
+         wxLogMessage( _( "Cannot create prj file '%s' (Directory not writable)" ),
+diff --git a/template/CMakeLists.txt b/template/CMakeLists.txt
+index a804e9e..c3e128d 100644
+--- a/template/CMakeLists.txt
++++ b/template/CMakeLists.txt
+@@ -1,5 +1,6 @@
+ install( FILES
+     kicad.pro
++    kicad.kicad_pcb
+     gost_landscape.kicad_wks
+     gost_portrait.kicad_wks
+     pagelayout_default.kicad_wks
+diff --git a/template/kicad.pro b/template/kicad.pro
+index 804cf83..5cef6e8 100644
+--- a/template/kicad.pro
++++ b/template/kicad.pro
+@@ -60,3 +60,15 @@ LibName26=opto
+ LibName27=atmel
+ LibName28=contrib
+ LibName29=valves
++LibName30=w_analog
++LibName31=w_connectors
++LibName32=w_device
++LibName33=w_logic
++LibName34=w_memory
++LibName35=w_microcontrollers
++LibName36=w_opto
++LibName37=w_relay
++LibName38=w_rtx
++LibName39=w_transistor
++LibName40=w_vacuum
++LibName41=collieparts
+diff --git a/template/kicad.kicad_pcb b/template/kicad.kicad_pcb
+index e69de29..8ef89d4 100644
+--- a/template/kicad.kicad_pcb
++++ b/template/kicad.kicad_pcb
+@@ -0,0 +1,118 @@
++(kicad_pcb (version 4) (host pcbnew "(2014-09-28 BZR 5153)-product")
++
++  (general
++    (links 0)
++    (no_connects 0)
++    (area 0 0 0 0)
++    (thickness 1.6)
++    (drawings 0)
++    (tracks 0)
++    (zones 0)
++    (modules 0)
++    (nets 1)
++  )
++
++  (page A4)
++  (layers
++    (0 F.Cu signal)
++    (31 B.Cu signal)
++    (32 B.Adhes user)
++    (33 F.Adhes user)
++    (34 B.Paste user)
++    (35 F.Paste user)
++    (36 B.SilkS user)
++    (37 F.SilkS user)
++    (38 B.Mask user)
++    (39 F.Mask user)
++    (40 Dwgs.User user)
++    (41 Cmts.User user)
++    (42 Eco1.User user)
++    (43 Eco2.User user)
++    (44 Edge.Cuts user)
++    (45 Margin user)
++    (46 B.CrtYd user)
++    (47 F.CrtYd user)
++    (48 B.Fab user)
++    (49 F.Fab user)
++  )
++
++  (setup
++    (last_trace_width 0.254)
++    (user_trace_width 0.1524)
++    (user_trace_width 0.2)
++    (user_trace_width 0.25)
++    (user_trace_width 0.3)
++    (user_trace_width 0.4)
++    (user_trace_width 0.5)
++    (user_trace_width 0.6)
++    (user_trace_width 0.8)
++    (user_trace_width 1)
++    (user_trace_width 1.2)
++    (user_trace_width 1.5)
++    (user_trace_width 2)
++    (trace_clearance 0.1524)
++    (zone_clearance 0.1524)
++    (zone_45_only yes)
++    (trace_min 0.1524)
++    (segment_width 0.127)
++    (edge_width 0.127)
++    (via_size 0.6096)
++    (via_drill 0.3302)
++    (via_min_size 0.6096)
++    (via_min_drill 0.3302)
++    (uvia_size 0.6096)
++    (uvia_drill 0.3302)
++    (uvias_allowed no)
++    (uvia_min_size 0.6096)
++    (uvia_min_drill 0.3302)
++    (pcb_text_width 0.127)
++    (pcb_text_size 0.6 0.6)
++    (mod_edge_width 0.127)
++    (mod_text_size 0.6 0.6)
++    (mod_text_width 0.127)
++    (pad_size 1.524 1.524)
++    (pad_drill 0.762)
++    (pad_to_mask_clearance 0.05)
++    (pad_to_paste_clearance -0.04)
++    (aux_axis_origin 0 0)
++    (visible_elements FFFFFF7F)
++    (pcbplotparams
++      (layerselection 0x3ffff_80000001)
++      (usegerberextensions true)
++      (usegerberattributes true)
++      (excludeedgelayer true)
++      (linewidth 0.127000)
++      (plotframeref false)
++      (viasonmask false)
++      (mode 1)
++      (useauxorigin false)
++      (hpglpennumber 1)
++      (hpglpenspeed 20)
++      (hpglpendiameter 15)
++      (hpglpenoverlay 2)
++      (psnegative false)
++      (psa4output false)
++      (plotreference true)
++      (plotvalue true)
++      (plotinvisibletext false)
++      (padsonsilk false)
++      (subtractmaskfromsilk false)
++      (outputformat 1)
++      (mirror false)
++      (drillshape 0)
++      (scaleselection 1)
++      (outputdirectory CAM/))
++  )
++
++  (net 0 "")
++
++  (net_class Default "This is the standaard class."
++    (clearance 0.1524)
++    (trace_width 0.1524)
++    (via_dia 0.6096)
++    (via_drill 0.3302)
++    (uvia_dia 0.6096)
++    (uvia_drill 0.3302)
++  )
++
++)
