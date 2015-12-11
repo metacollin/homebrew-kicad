@@ -1,8 +1,8 @@
 class Kicad < Formula
   desc "Electronic Design Automation Suite"
   homepage "http://www.kicad-pcb.org"
-  url "https://launchpad.net/kicad/4.0/4.0.0-rc1/+download/kicad-4.0.0-rc1.tar.xz"
-  sha256 "62c2e95a2d6b8a3cf30bb91146c3d2b1c0df0cbfc070b6e54bcfdf0da2df6973"
+  url "https://launchpad.net/kicad/4.0/4.0.1/+download/kicad-4.0.1.tar.xz"
+  sha256 "73a9f8713ba93ce34e5f9c26e9667f33a22f4e33192fa6bd15d3fc0edea54bde"
   head "https://github.com/KiCad/kicad-source-mirror.git"
 
   option "without-menu-icons", "Build without icons menus."
