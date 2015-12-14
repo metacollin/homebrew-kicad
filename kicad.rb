@@ -174,7 +174,7 @@ class Kicad < Formula
 
   def caveats
     s = ""
-    if build.with? "default-paths"
+    if build.without? "default-paths"
       s += <<-EOS.undent
 
       KiCad component libraries and preferences are located in:
