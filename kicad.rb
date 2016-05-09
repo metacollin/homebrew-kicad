@@ -39,8 +39,13 @@ class Kicad < Formula
   # for this, so I have simply concatenated all the patches into one patch to make it fit better into homebrew.  These
   # Patches are the ones that come from the stable release archive of KiCad under the patches directory.
   resource "wxpatch" do
-    url "https://gist.githubusercontent.com/metacollin/2d5760743df73c939d53/raw/b25008a92c8f518df582ad88d266dcf2d75f9d12/wxp.patch"
-    sha256 "0a19c475ded29186683a9e7f7d9316e4cbea4db7b342f599cee0e116fa019f3e"
+     url "https://gist.githubusercontent.com/metacollin/2d5760743df73c939d53/raw/341390839ecd70aba743da64624c90c5d1afcff3/wxp.patch"
+     sha256 "25f40ddc68a182e7dd9f795066910d57e0c53dd4096b85797fbf8e3489685a77"
+  end
+
+  resource "glpatch" do
+    url "https://gist.githubusercontent.com/metacollin/cae8c54d100574f0482b5735561fc08f/raw/dd2bb54eb5e2c77871949e1dc3e25d1ab49afa8f/glpatch.patch"
+    sha256 "24e86101a164633db8354a66be6ec76599750b5d49bd1d3b60fa04ec0d7e66bf"
   end
 
   resource "wxk" do
@@ -70,7 +75,9 @@ class Kicad < Formula
 
     resource("wxk").stage do
       (Pathname.pwd).install resource("wxpatch")
-      safe_system "/usr/bin/patch", "-g", "0", "-f", "-d", Pathname.pwd, "-p1", "-i", "wxp.patch"
+      safe_system "/usr/bin/patch", "-g", "0", "-f", "-d", Pathname.pwd, "-p0", "-i", "wxp.patch"
+      (Pathname.pwd).install resource("glpatch")
+      safe_system "/usr/bin/patch", "-g", "0", "-f", "-d", Pathname.pwd, "-p0", "-i", "glpatch.patch"
 
       mkdir "wx-build" do
         args = [
@@ -94,7 +101,7 @@ class Kicad < Formula
         ]
 
         system "../configure", *args
-        system "make", "-j#{ENV.make_jobs}"
+        system "make", "-j8"
         system "make", "install"
       end
 
