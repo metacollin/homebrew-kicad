@@ -30,6 +30,7 @@ script:
   - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then
       brew test-bot --tap=homebrew/science;
     fi
+  - brew install kicad
     
 notifications:
   email:
