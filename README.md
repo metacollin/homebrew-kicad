@@ -21,7 +21,7 @@ brew install kicad
 ### Notes on the library
 By default, this formula doesn't handle the KiCad Library files.  However, you can tell the formula to download and install the latest KiCad support files for you by using the `--without-default-paths` option.  This will "brew-ify" KiCad by changing its search paths to
 
-`$(brew --preix)/etc/kicad`
+`$(brew --prefix)/etc/kicad`
 
 for both library files and user preferences and, if necessary, installing files.  Existing files will not be overwritten.  
 
