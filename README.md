@@ -5,10 +5,7 @@ Delicious and foamy ~~--HEAD  only~~ stable [Homebrew](https://github.com/mxcl/h
 
 This tap also includes some OSX specific tweaks that presently are not part of the official stable and nightly builds (for now):
 
--  wxWidgets is patched so that 
-â
-Œ
-˜-C correctly copies text instead of closing the current window.
+-  wxWidgets is patched so that &#8984;-C correctly copies text instead of closing the current window.
 
 ### Installation is simple...
 ```sh
