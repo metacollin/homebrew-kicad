@@ -6,7 +6,8 @@ class Kicad < Formula
   head "https://github.com/KiCad/kicad-source-mirror.git"
 
   option "without-menu-icons", "Build without icons menus."
-  option "with-default-paths", "Do not alter KiCad's file paths."
+  option "with-brewed-library", "Use homebrew to manage KiCad\"s library files."
+  option "with-wx31", "Use wxWidgets 3.1.0.  Cannot enable python support with this option."
 
   depends_on "bazaar" => :build
   depends_on "boost"
@@ -33,14 +34,23 @@ class Kicad < Formula
 
   fails_with :gcc
   fails_with :llvm
+  odie "Options --with-wx31 and --with-python are mutually exclusive." if (build.with? "python" == true) && (build.with? "wx31" == true)
 
   # KiCad requires wx to have several bugs fixed to function, but the patches have yet to be included with a wx release
   # so KiCad, as part of its build system, builds its own wx binaries with these fixes included.  It uses a bash script
   # for this, so I have simply concatenated all the patches into one patch to make it fit better into homebrew.  These
   # Patches are the ones that come from the stable release archive of KiCad under the patches directory.
+
+  patch :p0, :DATA
+
+  resource "wx31patch" do
+    url "https://gist.githubusercontent.com/metacollin/710d4cb34a549532cbd33c5ab668eecc/raw/e8ca8cb496d778cb356c83b659dc5736e302b964/wx31.patch"
+    sha256 "bbe4a15ebbb4b5b58d3a01ae36902672fe6fe579302b2635e6cb395116f65e3b"
+  end
+
   resource "wxpatch" do
-     url "https://gist.githubusercontent.com/metacollin/2d5760743df73c939d53/raw/341390839ecd70aba743da64624c90c5d1afcff3/wxp.patch"
-     sha256 "25f40ddc68a182e7dd9f795066910d57e0c53dd4096b85797fbf8e3489685a77"
+    url "https://gist.githubusercontent.com/metacollin/2d5760743df73c939d53/raw/341390839ecd70aba743da64624c90c5d1afcff3/wxp.patch"
+    sha256 "25f40ddc68a182e7dd9f795066910d57e0c53dd4096b85797fbf8e3489685a77"
   end
 
   resource "glpatch" do
@@ -48,17 +58,26 @@ class Kicad < Formula
     sha256 "24e86101a164633db8354a66be6ec76599750b5d49bd1d3b60fa04ec0d7e66bf"
   end
 
-  resource "wxk" do
-    url "https://downloads.sourceforge.net/project/wxpython/wxPython/3.0.2.0/wxPython-src-3.0.2.0.tar.bz2"
-    sha256 "d54129e5fbea4fb8091c87b2980760b72c22a386cb3b9dd2eebc928ef5e8df61"
+  if build.without? "wx31"
+    resource "wxk" do
+      url "https://downloads.sourceforge.net/project/wxpython/wxPython/3.0.2.0/wxPython-src-3.0.2.0.tar.bz2"
+      sha256 "d54129e5fbea4fb8091c87b2980760b72c22a386cb3b9dd2eebc928ef5e8df61"
+    end
+  else
+    resource "wxk" do
+      url "https://github.com/wxWidgets/wxWidgets/releases/download/v3.1.0/wxWidgets-3.1.0.tar.bz2"
+      sha256 "e082460fb6bf14b7dd6e8ac142598d1d3d0b08a7b5ba402fdbf8711da7e66da8"
+    end
   end
 
-  resource "kicad-library" do
-    url "https://github.com/KiCad/kicad-library.git"
+  if build.with? "brewed-library"
+    resource "kicad-library" do
+      url "https://github.com/KiCad/kicad-library.git"
+    end
   end
 
   def install
-    ENV["MAC_OS_X_VERSION_MIN_REQUIRED"] = "#{MacOS.version}"
+    ENV["MAC_OS_X_VERSION_MIN_REQUIRED"] = MacOS.version.to_s
     ENV.append "ARCHFLAGS", "-Wunused-command-line-argument-hard-error-in-future"
     ENV.append "LDFLAGS", "-headerpad_max_install_names"
     if MacOS.version < :mavericks
@@ -67,37 +86,42 @@ class Kicad < Formula
       ENV.libcxx
     end
 
-    if build.without? "default-paths"
+    if build.with? "brewed-library"
       inreplace "common/common.cpp", "/Library/Application Support/kicad", "#{etc}/kicad"
       inreplace "common/common.cpp", "wxStandardPaths::Get().GetUserConfigDir()", "wxT( \"#{etc}/kicad\" )"
       inreplace "common/pgm_base.cpp", "DEFAULT_INSTALL_PATH", "\"#{etc}/kicad\""
     end
 
     resource("wxk").stage do
-      (Pathname.pwd).install resource("wxpatch")
-      safe_system "/usr/bin/patch", "-g", "0", "-f", "-d", Pathname.pwd, "-p0", "-i", "wxp.patch"
-      (Pathname.pwd).install resource("glpatch")
-      safe_system "/usr/bin/patch", "-g", "0", "-f", "-d", Pathname.pwd, "-p0", "-i", "glpatch.patch"
+      if build.with? "wx31"
+        Pathname.pwd.install resource "wx31patch"
+        safe_system "/usr/bin/patch", "-g", "0", "-f", "-d", Pathname.pwd, "-p1", "-i", "wx31.patch"
+      else
+        Pathname.pwd.install resource("wxpatch")
+        safe_system "/usr/bin/patch", "-g", "0", "-f", "-d", Pathname.pwd, "-p0", "-i", "wxp.patch"
+        Pathname.pwd.install resource("glpatch")
+        safe_system "/usr/bin/patch", "-g", "0", "-f", "-d", Pathname.pwd, "-p0", "-i", "glpatch.patch"
+      end
 
       mkdir "wx-build" do
-        args = [
-          "--prefix=#{buildpath/"wxk"}",
-          "--with-opengl",
-          "--enable-aui",
-          "--enable-utf8",
-          "--enable-html",
-          "--enable-stl",
-          "--with-libjpeg=builtin",
-          "--with-libpng=builtin",
-          "--with-regex=builtin",
-          "--with-libtiff=builtin",
-          "--with-zlib=builtin",
-          "--with-expat=builtin",
-          "--without-liblzma",
-          "--with-macosx-version-min=#{MacOS.version}",
-          "--enable-universal_binary=i386,x86_64",
-          "CC=#{ENV.cc}",
-          "CXX=#{ENV.cxx}",
+        args = %W[
+          --prefix=#{buildpath}/wxk
+          --with-opengl
+          --enable-aui
+          --enable-utf8
+          --enable-html
+          --enable-stl
+          --with-libjpeg=builtin
+          --with-libpng=builtin
+          --with-regex=builtin
+          --with-libtiff=builtin
+          --with-zlib=builtin
+          --with-expat=builtin
+          --without-liblzma
+          --with-macosx-version-min=#{MacOS.version}
+          --enable-universal_binary=i386,x86_64
+          CC=#{ENV.cc}
+          CXX=#{ENV.cxx}
         ]
 
         system "../configure", *args
@@ -109,7 +133,7 @@ class Kicad < Formula
         cd "wxPython" do
           args = [
             "WXPORT=osx_cocoa",
-            "WX_CONFIG=#{buildpath/"wxk"}/bin/wx-config",
+            "WX_CONFIG=#{buildpath}/wxk/bin/wx-config",
             "UNICODE=1",
             "BUILD_BASE=#{buildpath}/wx-build",
           ]
@@ -121,14 +145,12 @@ class Kicad < Formula
     end
 
     mkdir "build" do
-      if build.with? "python"
-        ENV.prepend_create_path "PYTHONPATH", "#{buildpath}/py/lib/python2.7/site-packages"
-      end
+      ENV.prepend_create_path "PYTHONPATH", "#{buildpath}/py/lib/python2.7/site-packages" if build.with? "python" == true
 
       args = %W[
         -DCMAKE_INSTALL_PREFIX=#{prefix}
         -DCMAKE_OSX_DEPLOYMENT_TARGET=#{MacOS.version}
-        -DwxWidgets_CONFIG_EXECUTABLE=#{buildpath/"wxk"}/bin/wx-config
+        -DwxWidgets_CONFIG_EXECUTABLE=#{buildpath}/wxk/bin/wx-config
         -DKICAD_REPO_NAME=brewed_product
         -DKICAD_SKIP_BOOST=ON
         -DBoost_USE_STATIC_LIBS=ON
@@ -156,9 +178,7 @@ class Kicad < Formula
       args << "-DCMAKE_C_COMPILER=#{ENV.cc}"
       args << "-DCMAKE_CXX_COMPILER=#{ENV.cxx}"
 
-      if build.with? "menu-icons"
-        args << "-DUSE_IMAGES_IN_MENUS=ON"
-      end
+      args << "-DUSE_IMAGES_IN_MENUS=ON" if build.with? "menu-icons" == true
 
       system "cmake", "../", *(std_cmake_args + args)
       system "make", "-j#{ENV.make_jobs}"
@@ -166,12 +186,8 @@ class Kicad < Formula
     end
   end
 
-  def kicaddir
-    etc/"kicad"
-  end
-
   def post_install
-    if build.without? "default-paths"
+    if build.with? "brewed-library"
       kicaddir.mkpath
       resource("kicad-library").stage do
         cp_r Dir["*"], kicaddir
@@ -179,21 +195,12 @@ class Kicad < Formula
     end
   end
 
+  def kicaddir
+    etc / "kicad"
+  end
+
   def caveats
-    s = ""
-    if build.without? "default-paths"
-      s += <<-EOS.undent
-
-      KiCad component libraries and preferences are located in:
-        #{kicaddir}
-
-      Component libraries have been setup for you, but
-      footprints and 3D models must be downloaded from
-      within Pcbnew.  It will automatically guide you
-      through this process upon first lauch.
-      EOS
-    else
-      s += <<-EOS.undent
+    s = <<-EOS.undent
 
       KiCad component libraries must be installed manually in:
         /Library/Application Support/kicad
@@ -202,7 +209,6 @@ class Kicad < Formula
         sudo git clone https://github.com/KiCad/kicad-library.git \
           /Library/Application\ Support/kicad
       EOS
-    end
 
     s
   end
@@ -211,3 +217,24 @@ class Kicad < Formula
     assert File.exist? "#{prefix}/KiCad.app/Contents/MacOS/kicad"
   end
 end
+__END__
+=== modified file 'common/tool/tool_dispatcher.cpp'
+--- common/tool/tool_dispatcher.cpp 2016-05-02 14:12:17 +0000
++++ common/tool/tool_dispatcher.cpp 2016-05-05 07:35:11 +0000
+@@ -323,6 +323,14 @@
+         m_toolMgr->ProcessEvent( *evt );
+
+     // pass the event to the GUI, it might still be interested in it
++#ifdef __APPLE__
++    // On OS X, key events are always meant to be caught.  An uncaught key event is assumed
++    // to be a user input error by OS X (as they are pressing keys in a context where nothing
++    // is there to catch the event).  This annoyingly makes OS X beep and/or flash the screen
++    // in pcbnew and the footprint editor any time a hotkey is used.  The correct procedure is
++    // to NOT pass key events to the GUI under OS X.
++    if ( type != wxEVT_CHAR )
++#endif
+     aEvent.Skip();
+
+     updateUI();
+
+
