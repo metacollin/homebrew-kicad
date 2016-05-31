@@ -41,8 +41,6 @@ class Kicad < Formula
   # for this, so I have simply concatenated all the patches into one patch to make it fit better into homebrew.  These
   # Patches are the ones that come from the stable release archive of KiCad under the patches directory.
 
-  patch :p0, :DATA
-
   resource "wx31patch" do
     url "https://gist.githubusercontent.com/metacollin/710d4cb34a549532cbd33c5ab668eecc/raw/e8ca8cb496d778cb356c83b659dc5736e302b964/wx31.patch"
     sha256 "bbe4a15ebbb4b5b58d3a01ae36902672fe6fe579302b2635e6cb395116f65e3b"
@@ -217,24 +215,3 @@ class Kicad < Formula
     assert File.exist? "#{prefix}/KiCad.app/Contents/MacOS/kicad"
   end
 end
-__END__
-=== modified file 'common/tool/tool_dispatcher.cpp'
---- common/tool/tool_dispatcher.cpp 2016-05-02 14:12:17 +0000
-+++ common/tool/tool_dispatcher.cpp 2016-05-05 07:35:11 +0000
-@@ -323,6 +323,14 @@
-         m_toolMgr->ProcessEvent( *evt );
-
-     // pass the event to the GUI, it might still be interested in it
-+#ifdef __APPLE__
-+    // On OS X, key events are always meant to be caught.  An uncaught key event is assumed
-+    // to be a user input error by OS X (as they are pressing keys in a context where nothing
-+    // is there to catch the event).  This annoyingly makes OS X beep and/or flash the screen
-+    // in pcbnew and the footprint editor any time a hotkey is used.  The correct procedure is
-+    // to NOT pass key events to the GUI under OS X.
-+    if ( type != wxEVT_CHAR )
-+#endif
-     aEvent.Skip();
-
-     updateUI();
-
-
