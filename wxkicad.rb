@@ -11,19 +11,15 @@ class Wxkicad < Formula
 
   keg_only "Custom patched version of wxWidgets, only for use by KiCad."
 
-
- # bottle do
- #   root_url "https://electropi.mp"
- #   revision 3
- #   sha256 "c9e92d9a896e3558a684345e4ce20d123b265487965c3cfd29673ea64381cee7" => :yosemite
- #   sha256 "3553e767d5aa30bbd43004316a755e736f694775de8b12b58b0ecc5157a97654" => :lion
- # end
-
-  patch :p1 do
-     url "https://gist.githubusercontent.com/metacollin/2d5760743df73c939d53/raw/b25008a92c8f518df582ad88d266dcf2d75f9d12/wxp.patch"
-     sha256 "0a19c475ded29186683a9e7f7d9316e4cbea4db7b342f599cee0e116fa019f3e"
+  patch :p0 do
+     url "https://gist.githubusercontent.com/metacollin/2d5760743df73c939d53/raw/341390839ecd70aba743da64624c90c5d1afcff3/wxp.patch"
+     sha256 "25f40ddc68a182e7dd9f795066910d57e0c53dd4096b85797fbf8e3489685a77"
   end
 
+  patch :p0 do
+    url "https://gist.githubusercontent.com/metacollin/cae8c54d100574f0482b5735561fc08f/raw/dd2bb54eb5e2c77871949e1dc3e25d1ab49afa8f/glpatch.patch"
+    sha256 "24e86101a164633db8354a66be6ec76599750b5d49bd1d3b60fa04ec0d7e66bf"
+  end
   fails_with :gcc
   fails_with :llvm
 
@@ -60,7 +56,7 @@ class Wxkicad < Formula
       ]
 
       system "../configure", *args
-      system "make", "-j6"
+      system "make", "-j#{ENV.make_jobs}"
       system "make", "install"
     end
     (prefix/"wx-build").install Dir["wx-build/*"]
