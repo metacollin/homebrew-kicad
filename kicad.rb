@@ -1,15 +1,14 @@
 class Kicad < Formula
   desc "Electronic Design Automation Suite"
   homepage "http://www.kicad-pcb.org"
-  url "https://launchpad.net/kicad/4.0/4.0.2/+download/kicad-4.0.2.tar.xz"
-  sha256 "2eae6986843a29862ab399a30b50454582d22f58ed3f53eb50d0c85e5d488eb9"
-  head "https://github.com/KiCad/kicad-source-mirror.git"
+  url "https://launchpad.net/kicad/4.0/4.0.3/+download/kicad-4.0.3.tar.xz"
+  sha256 "7f45ac77ed14953d8f8a4413db7ff6c283d8175e9a16460b1579a6a8ff917547"
+  head "https://git.launchpad.net/kicad", :using => :git
 
   option "without-menu-icons", "Build without icons menus."
   option "with-brewed-library", "Use homebrew to manage KiCad\"s library files."
   option "with-wx31", "Use wxWidgets 3.1.0.  Cannot enable python support with this option."
 
-  depends_on "bazaar" => :build
   depends_on "boost"
   depends_on "cairo"
   depends_on "cmake" => :build
