@@ -1,7 +1,7 @@
 # Homebrew KiCad EDA Suite 
 _Now building 4.0.2 stable!_
 
-Delicious and foamy stable (and --HEAD!) [Homebrew](https://github.com/mxcl/homebrew) tap for [KiCad](http://www.kicad-pcb.org) and it's library.  This is intended for anyone who wants to customize their build of KiCad, build latest stable release optimized for their specific version of OS X and using the latest version of boost and other dependencies.  
+Delicious and foamy stable (and `--HEAD`!) [Homebrew](https://github.com/mxcl/homebrew) tap for [KiCad](http://www.kicad-pcb.org) and it's library.  This is intended for anyone who wants to customize their build of KiCad, build latest stable release optimized for their specific version of OS X and using the latest version of boost and other dependencies.  
 
 This tap also includes some OSX specific tweaks that presently are not part of the official stable and nightly builds (for now):
 
