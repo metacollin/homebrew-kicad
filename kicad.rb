@@ -50,6 +50,11 @@ class Kicad < Formula
     sha256 "25f40ddc68a182e7dd9f795066910d57e0c53dd4096b85797fbf8e3489685a77"
   end
 
+  resource "wxqtpatch" do
+      url "https://raw.githubusercontent.com/Homebrew/formula-patches/bbf4995/wxmac/patch-quicktime-removal.diff"
+      sha256 "ebddf09877b053a6fafbf61ac52e4a7b511489dc8437110f80f00d5d2b5ff885"
+  end
+
   resource "glpatch" do
     url "https://gist.githubusercontent.com/metacollin/cae8c54d100574f0482b5735561fc08f/raw/dd2bb54eb5e2c77871949e1dc3e25d1ab49afa8f/glpatch.patch"
     sha256 "24e86101a164633db8354a66be6ec76599750b5d49bd1d3b60fa04ec0d7e66bf"
@@ -96,6 +101,8 @@ class Kicad < Formula
       else
         Pathname.pwd.install resource("wxpatch")
         safe_system "/usr/bin/patch", "-g", "0", "-f", "-d", Pathname.pwd, "-p0", "-i", "wxp.patch"
+        Pathname.pwd.install resource("wxqtpatch")
+        safe_system "/usr/bin/patch", "-g", "0", "-f", "-d", Pathname.pwd, "-p1", "-i", "patch-quicktime-removal.diff"
         Pathname.pwd.install resource("glpatch")
         safe_system "/usr/bin/patch", "-g", "0", "-f", "-d", Pathname.pwd, "-p0", "-i", "glpatch.patch"
       end
@@ -108,6 +115,7 @@ class Kicad < Formula
           --enable-utf8
           --enable-html
           --enable-stl
+          --disable-mediactrl
           --with-libjpeg=builtin
           --with-libpng=builtin
           --with-regex=builtin
