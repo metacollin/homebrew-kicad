@@ -9,13 +9,13 @@ class Wxkicad < Formula
   depends_on "glew"
   depends_on "llvm" => :build if build.with? "openmp"
 
-  #bottle do
-  #  root_url "https://electropi.mp/bottles"
-   # cellar :any
-   # sha256 "4448222f6add5aaaebf3b800528749d7cb59ec6fc04fae4c96e856d1edf06c3e" => :el_capitan
-   # sha256 "ee5c73dbb6e9098384c273e71279848ef0698a7b80735e7cba96120e2b1209b9" => :sierra
-   # sha256 "6d66edde8fa6eaed555e4f76fd29ebd42b818ed9f1f1cae5a80a2b93e72adac6" => :yosemite
- # end
+  bottle do
+    root_url "https://electropi.mp/bottles"
+    cellar :any
+    sha256 "11b692dd58d8fc24f4db7d5f24c830281795883bb1ff5b2753e2db11fbbfa8a9" => :sierra
+    sha256 "16031ea78c5c692a25ca4a902df545cf9aca52cd0e007bb119092240724469aa" => :el_capitan
+    sha256 "acd1561204113072db12836e15d35d66fd3d9b958f4e2453b7dccc641d1d1318" => :yosemite
+  end
 
   option "with-openmp", "Use OpenMP for multiprocessing support."
 
