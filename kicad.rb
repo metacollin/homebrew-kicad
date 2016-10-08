@@ -1,15 +1,26 @@
 class Kicad < Formula
   desc "Electronic Design Automation Suite"
   homepage "http://www.kicad-pcb.org"
-  url "https://launchpad.net/kicad/4.0/4.0.3/+download/kicad-4.0.3.tar.xz"
-  sha256 "7f45ac77ed14953d8f8a4413db7ff6c283d8175e9a16460b1579a6a8ff917547"
+  url "https://launchpad.net/kicad/4.0/4.0.4/+download/kicad-4.0.4.tar.xz"
+  sha256 "6da5d3f7bc63a9c5b4d0f5e4b954411b45d712168596b5af02957343c87eda00"
   head "https://git.launchpad.net/kicad", :using => :git
 
   option "without-menu-icons", "Build without icons menus."
-  option "with-brewed-library", "Use homebrew to manage KiCad\"s library files."
-  option "with-wx31", "Use wxWidgets 3.1.0.  Cannot enable python support with this option."
+  option "with-brewed-library", "Use homebrew to manage KiCad\"s library files"
+  option "with-nice-curves", "Doubles the point/segment count used both in pcbnew, and plotted file formats"
+  option "with-openmp", "Use OpenMP for multiprocessing support"
+  option "with-nicer-curves", "Quadruples the point/segment count used both in pcbnew, and plotted file formats"
+  option "with-ngspice", "Build eeschema with ngspice simulation functionality. --HEAD only."
+  option "with-oce", "Build with open cascade support.  --HEAD only."
 
-  depends_on "boost"
+  head do
+    depends_on "boost"
+  end
+
+  stable do
+    depends_on "boost159"
+  end
+
   depends_on "cairo"
   depends_on "cmake" => :build
   depends_on "doxygen" => :build
@@ -26,44 +37,49 @@ class Kicad < Formula
   depends_on "pcre"
   depends_on "pixman"
   depends_on "pkg-config" => :build
-  depends_on "python" => :optional
+  depends_on "python" => :recommended
   depends_on "swig" => :build if build.with? "python"
   depends_on "xz"
   depends_on "glm"
+  depends_on "llvm" => :build if build.with? "openmp"
+  depends_on "homebrew/science/oce" if build.with? "oce"
+  depends_on "libngspice" if build.with? "ngspice"
+
+  if (build.with? "ngspice") && (build.stable?)
+    odie "Sorry, ngspice functionality requires building --HEAD"
+  end
+
+  if (build.with? "oce") && (build.stable?)
+    odie "Sorry, opencascade support requires building --HEAD"
+  end
+
+  if (build.with? "openmp") && (build.stable?)
+    odie "Sorry, openmp support requies building --HEAD"
+  end
+
+  if build.with? "openmp"
+    env :std # Necessary to switch to a different llvm toolchain.  Apple's clang *still* doesn't support OpenMP.
+    # We need to make sure wx is built and linked against the new toolchain's standard librares.
+    if build.with? "debug"
+      depends_on "metacollin/kicad/wxkdebug" => ["with-openmp"]
+    else
+      depends_on "metacollin/kicad/wxkicad" => ["with-openmp"]
+    end
+  else
+    if  build.with? "debug"
+      depends_on "metacollin/kicad/wxdebug"
+    else
+      depends_on "metacollin/kicad/wxkicad"
+    end
+  end
 
   fails_with :gcc
   fails_with :llvm
-  odie "Options --with-wx31 and --with-python are mutually exclusive." if (build.with? "python" == true) && (build.with? "wx31" == true)
 
-  # KiCad requires wx to have several bugs fixed to function, but the patches have yet to be included with a wx release
-  # so KiCad, as part of its build system, builds its own wx binaries with these fixes included.  It uses a bash script
-  # for this, so I have simply concatenated all the patches into one patch to make it fit better into homebrew.  These
-  # Patches are the ones that come from the stable release archive of KiCad under the patches directory.
-
-  resource "wx31patch" do
-    url "https://gist.githubusercontent.com/metacollin/710d4cb34a549532cbd33c5ab668eecc/raw/e8ca8cb496d778cb356c83b659dc5736e302b964/wx31.patch"
-    sha256 "bbe4a15ebbb4b5b58d3a01ae36902672fe6fe579302b2635e6cb395116f65e3b"
-  end
-
-  resource "wxpatch" do
-    url "https://gist.githubusercontent.com/metacollin/2d5760743df73c939d53/raw/341390839ecd70aba743da64624c90c5d1afcff3/wxp.patch"
-    sha256 "25f40ddc68a182e7dd9f795066910d57e0c53dd4096b85797fbf8e3489685a77"
-  end
-
-  resource "glpatch" do
-    url "https://gist.githubusercontent.com/metacollin/cae8c54d100574f0482b5735561fc08f/raw/dd2bb54eb5e2c77871949e1dc3e25d1ab49afa8f/glpatch.patch"
-    sha256 "24e86101a164633db8354a66be6ec76599750b5d49bd1d3b60fa04ec0d7e66bf"
-  end
-
-  if build.without? "wx31"
+  if build.with? "python"
     resource "wxk" do
       url "https://downloads.sourceforge.net/project/wxpython/wxPython/3.0.2.0/wxPython-src-3.0.2.0.tar.bz2"
       sha256 "d54129e5fbea4fb8091c87b2980760b72c22a386cb3b9dd2eebc928ef5e8df61"
-    end
-  else
-    resource "wxk" do
-      url "https://github.com/wxWidgets/wxWidgets/releases/download/v3.1.0/wxWidgets-3.1.0.tar.bz2"
-      sha256 "e082460fb6bf14b7dd6e8ac142598d1d3d0b08a7b5ba402fdbf8711da7e66da8"
     end
   end
 
@@ -74,14 +90,31 @@ class Kicad < Formula
   end
 
   def install
-    ENV["MAC_OS_X_VERSION_MIN_REQUIRED"] = MacOS.version.to_s
-    ENV.append "ARCHFLAGS", "-Wunused-command-line-argument-hard-error-in-future"
+    if  build.with? "debug"
+      chmod 0644, Dir["#{Formula['metacollin/kicad/wxdebug'].lib}/*.dylib"]
+    else
+      chmod 0644, Dir["#{Formula['metacollin/kicad/wxkicad'].lib}/*.dylib"]
+    end
+
+    osx = MacOS.version
+    osx = "10.11" if (build.with? "openmp") && (osx >= :sierra)
+
+    ENV["ARCHFLAGS"] = "-Wunused-command-line-argument-hard-error-in-future"
     ENV.append "LDFLAGS", "-headerpad_max_install_names"
+    ENV.append "LDFLAGS", "-L#{Formula['llvm'].lib} -Wl,-rpath,#{Formula['llvm'].lib}" if build.with? "openmp"
+    ENV["CXXFLAGS"] = "-I#{Formula['llvm'].include}/c++/v1 -std=c++11 -stdlib=libc++" if build.with? "openmp"
+    ENV["CC"] = "#{Formula['llvm'].bin}/clang" if build.with? "openmp"
+    ENV["CXX"] = "#{Formula['llvm'].bin}/clang++" if build.with? "openmp"
+    ENV["MAC_OS_X_VERSION_MIN_REQUIRED"] = osx
+
     if MacOS.version < :mavericks
       ENV.libstdcxx
     else
       ENV.libcxx
     end
+
+   # inreplace "include/tool/coroutine.h", "#include <boost/context/fcontext.hpp>", "#if BOOST_VERSION < 106100\n#include <boost/context/fcontext.hpp>\n#else\n#include <boost/context/detail/fcontext.hpp>\n#endif"
+   # inreplace "include/tool/coroutine.h", "boost::context::", "boost::context::detail::"
 
     if build.with? "brewed-library"
       inreplace "common/common.cpp", "/Library/Application Support/kicad", "#{etc}/kicad"
@@ -89,51 +122,69 @@ class Kicad < Formula
       inreplace "common/pgm_base.cpp", "DEFAULT_INSTALL_PATH", "\"#{etc}/kicad\""
     end
 
-    resource("wxk").stage do
-      if build.with? "wx31"
-        Pathname.pwd.install resource "wx31patch"
-        safe_system "/usr/bin/patch", "-g", "0", "-f", "-d", Pathname.pwd, "-p1", "-i", "wx31.patch"
-      else
-        Pathname.pwd.install resource("wxpatch")
-        safe_system "/usr/bin/patch", "-g", "0", "-f", "-d", Pathname.pwd, "-p0", "-i", "wxp.patch"
-        Pathname.pwd.install resource("glpatch")
-        safe_system "/usr/bin/patch", "-g", "0", "-f", "-d", Pathname.pwd, "-p0", "-i", "glpatch.patch"
-      end
+    ##!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!##
+    ## Note: I have personally had several boards manufactured using gerbers generated with these settings, so these have been tested  ##
+    ## in a production environment.                                                                                                    ##
+    ##                                                                                                                                 ##
+    ## Even certain overly picky manufacturers with old machines didn't have any problems with the increased file size.                ##
+    ##                                                                                                                                 ##
+    ## However, this is not an indication it will work for you or won't break or ruin your boards.  Use at your own risk and liability.##
+    ## - metacollin #####################################################################################################################
+    if build.with? "nice-curves"
+      inreplace "gerbview/dcode.cpp", "define SEGS_CNT 32", "define SEGS_CNT 64"
+      inreplace "gerbview/export_to_pcbnew.cpp", "SEG_COUNT_CIRCLE    16", "SEG_COUNT_CIRCLE    32"
+      inreplace "gerbview/class_aperture_macro.cpp", "const int seg_per_circle = 64", "const int seg_per_circle = 128"
+      inreplace "common/geometry/shape_poly_set.cpp", "define SEG_CNT_MAX 64", "define SEG_CNT_MAX 128"
+      inreplace "pcbnew/pcbnew.h", "define ARC_APPROX_SEGMENTS_COUNT_LOW_DEF 16", "define ARC_APPROX_SEGMENTS_COUNT_LOW_DEF 30"
+      inreplace "pcbnew/pcbnew.h", "define ARC_APPROX_SEGMENTS_COUNT_HIGHT_DEF 32", "define ARC_APPROX_SEGMENTS_COUNT_HIGHT_DEF 64"
+      inreplace "pcbnew/pcbnew.h", "TEXTS_MIN_SIZE  Mils2iu( 5 )", "TEXTS_MIN_SIZE  Mils2iu( 3 )"
+      inreplace "pcbnew/class_pad_draw_functions.cpp", "define SEGCOUNT 32", "define SEGCOUNT 64"
+      inreplace "common/common_plotDXF_functions.cpp", "const int segmentToCircleCount = 64;", "const int segmentToCircleCount = 128;"
+      inreplace "common/common_plotGERBER_functions.cpp", "const int segmentToCircleCount = 64;", "const int segmentToCircleCount = 128;"
+      inreplace "common/common_plotHPGL_functions.cpp", "const int segmentToCircleCount = 32;", "const int segmentToCircleCount = 64;"
+      inreplace "common/common_plotPS_functions.cpp", "const int segmentToCircleCount = 64;", "const int segmentToCircleCount = 128;"
+      inreplace "include/gal/opengl/opengl_gal.h", "static const int    CIRCLE_POINTS   = 64;", "static const int    CIRCLE_POINTS   = 128;"
+      inreplace "include/gal/opengl/opengl_gal.h", "static const int    CURVE_POINTS    = 32;", "static const int    CURVE_POINTS    = 64;"
+      inreplace "common/class_plotter.cpp", "const int delta = 50;", "const int delta = 25;"
+      inreplace "3d-viewer/3d_canvas/cinfo3d_visu.cpp", "#define MIN_SEG_PER_CIRCLE 12", "#define MIN_SEG_PER_CIRCLE 24"
+      inreplace "3d-viewer/3d_canvas/cinfo3d_visu.cpp", "#define MAX_SEG_PER_CIRCLE 48", "#define MAX_SEG_PER_CIRCLE 96"
+    end
 
-      mkdir "wx-build" do
-        args = %W[
-          --prefix=#{buildpath}/wxk
-          --with-opengl
-          --enable-aui
-          --enable-utf8
-          --enable-html
-          --enable-stl
-          --with-libjpeg=builtin
-          --with-libpng=builtin
-          --with-regex=builtin
-          --with-libtiff=builtin
-          --with-zlib=builtin
-          --with-expat=builtin
-          --without-liblzma
-          --with-macosx-version-min=#{MacOS.version}
-          --enable-universal_binary=i386,x86_64
-          CC=#{ENV.cc}
-          CXX=#{ENV.cxx}
-        ]
+    if build.with? "nicer-curves"
+      inreplace "gerbview/dcode.cpp", "define SEGS_CNT 32", "define SEGS_CNT 128"
+      inreplace "gerbview/export_to_pcbnew.cpp", "SEG_COUNT_CIRCLE    16", "SEG_COUNT_CIRCLE    64"
+      inreplace "gerbview/class_aperture_macro.cpp", "const int seg_per_circle = 64", "const int seg_per_circle = 256"
+      inreplace "common/geometry/shape_poly_set.cpp", "define SEG_CNT_MAX 64", "define SEG_CNT_MAX 256"
+      inreplace "pcbnew/pcbnew.h", "define ARC_APPROX_SEGMENTS_COUNT_LOW_DEF 16", "define ARC_APPROX_SEGMENTS_COUNT_LOW_DEF 60"
+      inreplace "pcbnew/pcbnew.h", "define ARC_APPROX_SEGMENTS_COUNT_HIGHT_DEF 32", "define ARC_APPROX_SEGMENTS_COUNT_HIGHT_DEF 128"
+      inreplace "pcbnew/pcbnew.h", "TEXTS_MIN_SIZE  Mils2iu( 5 )", "TEXTS_MIN_SIZE  Mils2iu( 3 )"
+      inreplace "pcbnew/class_pad_draw_functions.cpp", "define SEGCOUNT 32", "define SEGCOUNT 128"
+      inreplace "common/common_plotDXF_functions.cpp", "const int segmentToCircleCount = 64;", "const int segmentToCircleCount = 256;"
+      inreplace "common/common_plotGERBER_functions.cpp", "const int segmentToCircleCount = 64;", "const int segmentToCircleCount = 256;"
+      inreplace "common/common_plotHPGL_functions.cpp", "const int segmentToCircleCount = 32;", "const int segmentToCircleCount = 128;"
+      inreplace "common/common_plotPS_functions.cpp", "const int segmentToCircleCount = 64;", "const int segmentToCircleCount = 256;"
+      inreplace "include/gal/opengl/opengl_gal.h", "static const int    CIRCLE_POINTS   = 64;", "static const int    CIRCLE_POINTS   = 256;"
+      inreplace "include/gal/opengl/opengl_gal.h", "static const int    CURVE_POINTS    = 32;", "static const int    CURVE_POINTS    = 128;"
+      inreplace "common/class_plotter.cpp", "const int delta = 50;", "const int delta = 10;"
+      inreplace "3d-viewer/3d_canvas/cinfo3d_visu.cpp", "#define MIN_SEG_PER_CIRCLE 12", "#define MIN_SEG_PER_CIRCLE 48"
+      inreplace "3d-viewer/3d_canvas/cinfo3d_visu.cpp", "#define MAX_SEG_PER_CIRCLE 48", "#define MAX_SEG_PER_CIRCLE 300"
+    end
 
-        system "../configure", *args
-        system "make", "-j8"
-        system "make", "install"
-      end
-
-      if build.with? "python"
+    if build.with? "python"
+      resource("wxk").stage do
         cd "wxPython" do
           args = [
             "WXPORT=osx_cocoa",
-            "WX_CONFIG=#{buildpath}/wxk/bin/wx-config",
-            "UNICODE=1",
-            "BUILD_BASE=#{buildpath}/wx-build",
+            "UNICODE=1"
           ]
+
+          if build.with? "debug"
+            args << "WX_CONFIG=#{Formula['metacollin/kicad/wxkdebug'].bin}/wx-config"
+            args << "BUILD_BASE=#{Formula['metacollin/kicad/wxkdebug']}/wx-build"
+          else
+            args << "WX_CONFIG=#{Formula['metacollin/kicad/wxkicad'].bin}/wx-config"
+            args << "BUILD_BASE=#{Formula['metacollin/kicad/wxkicad']}/wx-build"
+          end
 
           system "python", "setup.py", "build_ext", *args
           system "python", "setup.py", "install", "--prefix=#{buildpath}/py", *args
@@ -142,22 +193,24 @@ class Kicad < Formula
     end
 
     mkdir "build" do
-      ENV.prepend_create_path "PYTHONPATH", "#{buildpath}/py/lib/python2.7/site-packages" if build.with? "python" == true
+      ENV.prepend_create_path "PYTHONPATH", "#{buildpath}/py/lib/python2.7/site-packages" if build.with? "python"
 
       args = %W[
         -DCMAKE_INSTALL_PREFIX=#{prefix}
-        -DCMAKE_OSX_DEPLOYMENT_TARGET=#{MacOS.version}
-        -DwxWidgets_CONFIG_EXECUTABLE=#{buildpath}/wxk/bin/wx-config
+        -DCMAKE_OSX_DEPLOYMENT_TARGET=#{osx}
         -DKICAD_REPO_NAME=brewed_product
         -DKICAD_SKIP_BOOST=ON
         -DBoost_USE_STATIC_LIBS=ON
+        -DKICAD_USE_SCH_IO_MANAGER=ON
       ]
 
       if build.with? "debug"
         args << "-DCMAKE_BUILD_TYPE=Debug"
         args << "-DwxWidgets_USE_DEBUG=ON"
+        args << "-DwxWidgets_CONFIG_EXECUTABLE=#{Formula['metacollin/kicad/wxkdebug'].bin}/wx-config"
       else
         args << "-DCMAKE_BUILD_TYPE=Release"
+        args << "-DwxWidgets_CONFIG_EXECUTABLE=#{Formula['metacollin/kicad/wxkicad'].bin}/wx-config"
       end
 
       if build.with? "python"
@@ -172,23 +225,25 @@ class Kicad < Formula
         args << "-DKICAD_SCRIPTING_MODULES=OFF"
         args << "-DKICAD_SCRIPTING_WXPYTHON=OFF"
       end
-      args << "-DCMAKE_C_COMPILER=#{ENV.cc}"
-      args << "-DCMAKE_CXX_COMPILER=#{ENV.cxx}"
 
-      args << "-DUSE_IMAGES_IN_MENUS=ON" if build.with? "menu-icons" == true
+      if build.with? "openmp"
+        args << "-DCMAKE_C_COMPILER=#{Formula['llvm'].bin}/clang"
+        args << "-DCMAKE_CXX_COMPILER=#{Formula['llvm'].bin}/clang++"
+      else
+        args << "-DCMAKE_C_COMPILER=#{ENV.cc}"
+        args << "-DCMAKE_CXX_COMPILER=#{ENV.cxx}"
+      end
+
+      args << "-DKICAD_USE_OCE=ON" if build.with? "oce"
+      args << "-DKICAD_SPICE=ON" if build.with? "ngspice"
+
+      if build.with? "menu-icons"
+        args << "-DUSE_IMAGES_IN_MENUS=ON"
+      end
 
       system "cmake", "../", *(std_cmake_args + args)
       system "make", "-j#{ENV.make_jobs}"
       system "make", "install"
-    end
-  end
-
-  def post_install
-    if build.with? "brewed-library"
-      kicaddir.mkpath
-      resource("kicad-library").stage do
-        cp_r Dir["*"], kicaddir
-      end
     end
   end
 

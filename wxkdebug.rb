@@ -1,4 +1,4 @@
-class Wxkicad < Formula
+class Wxkdebug < Formula
   url "https://downloads.sourceforge.net/project/wxpython/wxPython/3.0.2.0/wxPython-src-3.0.2.0.tar.bz2"
   sha256 "d54129e5fbea4fb8091c87b2980760b72c22a386cb3b9dd2eebc928ef5e8df61"
   homepage "https://kicad-pcb.org"
@@ -19,7 +19,7 @@ class Wxkicad < Formula
 
   option "with-openmp", "Use OpenMP for multiprocessing support."
 
-  keg_only "Custom patched version of wxWidgets, only for use by KiCad."
+  keg_only "Custom patched version of wxWidgets with debug features enabled, only for use by KiCad."
 
   patch :p0 do
     url "https://gist.githubusercontent.com/metacollin/b6bbb5d54734bea3dcaca1ff22668016/raw/1bdf06a34efba3a67351b034bad27f97f7f712e0/wx_patch_unified.patch"
@@ -65,6 +65,7 @@ class Wxkicad < Formula
       args = [
         "--prefix=#{prefix}",
         "--with-opengl",
+        "--enable-debug",
         "--enable-aui",
         "--enable-utf8",
         "--enable-html",
