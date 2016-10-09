@@ -18,7 +18,7 @@ class Kicad < Formula
   end
 
   stable do
-    depends_on "boost159"
+    depends_on "homebrew/versions/boost159"
   end
 
   depends_on "cairo"
@@ -71,6 +71,12 @@ class Kicad < Formula
     else
       depends_on "metacollin/kicad/wxkicad"
     end
+  end
+
+  bottle do
+    root_url "https://electropi.mp/bottles"
+    cellar :any
+    sha256 "0a3ab5427a0881ecceca9b11429a039109cf86adf942d0c2d3c36a557650df4e" => :sierra
   end
 
   fails_with :gcc
@@ -241,7 +247,7 @@ class Kicad < Formula
         args << "-DUSE_IMAGES_IN_MENUS=ON"
       end
 
-      system "cmake", "../", *(std_cmake_args + args)
+      system "cmake", "../", *args
       system "make", "-j#{ENV.make_jobs}"
       system "make", "install"
     end
