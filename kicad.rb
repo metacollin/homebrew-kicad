@@ -1,26 +1,16 @@
 class Kicad < Formula
   desc "Electronic Design Automation Suite"
   homepage "http://www.kicad-pcb.org"
-  url "https://launchpad.net/kicad/4.0/4.0.4/+download/kicad-4.0.4.tar.xz"
-  sha256 "6da5d3f7bc63a9c5b4d0f5e4b954411b45d712168596b5af02957343c87eda00"
+  url "https://launchpad.net/kicad/4.0/4.0.6/+download/kicad-4.0.6.tar.xz"
+  sha256 "e97cacc179839e65f2afa14d8830a3bed549aaa9ed234c988851971bf2a42298"
   head "https://git.launchpad.net/kicad", :using => :git
 
-  option "without-menu-icons", "Build without icons menus."
-  option "with-brewed-library", "Use homebrew to manage KiCad\"s library files"
-  option "with-nice-curves", "Doubles the point/segment count used both in pcbnew, and plotted file formats"
-  option "with-openmp", "Use OpenMP for multiprocessing support"
-  option "with-nicer-curves", "Quadruples the point/segment count used both in pcbnew, and plotted file formats"
-  option "with-ngspice", "Build eeschema with ngspice simulation functionality. --HEAD only."
-  option "with-oce", "Build with open cascade support.  --HEAD only."
+  option "with-nice-curves", "Uses smoothness of curves in pcbnew visually and in plotted outputs (like gerbers).\n\tMost systems shouldn't see a meaningful performance impact."
+  #option "with-ngspice", "Build eeschema with ngspice simulation functionality. --HEAD only."
+  #option "without-oce", "Build with open cascade support.  --HEAD only."
+ # option "mc-defaults", "Patch so new pcbnew files are created with metacollin's preferred defaults.  This is for metacollin's own use and is neither supported or recommended."
 
-  head do
-    depends_on "boost"
-  end
-
-  stable do
-    depends_on "homebrew/versions/boost159"
-  end
-
+  depends_on "boost"
   depends_on "cairo"
   depends_on "cmake" => :build
   depends_on "doxygen" => :build
@@ -41,91 +31,33 @@ class Kicad < Formula
   depends_on "swig" => :build if build.with? "python"
   depends_on "xz"
   depends_on "glm"
-  depends_on "llvm" => :build if build.with? "openmp"
-  depends_on "homebrew/science/oce" if build.with? "oce"
-  depends_on "libngspice" if build.with? "ngspice"
+  depends_on "metacollin/kicad/kicad-wxwidgets"
+  depends_on "homebrew/science/oce" => :recommended
+  depends_on "libngspice" => :optional
+  depends_on "metacollin/kicad/kicad-wxpython" if build.with? "python"
 
   if (build.with? "ngspice") && (build.stable?)
     odie "Sorry, ngspice functionality requires building --HEAD"
   end
 
   if (build.with? "oce") && (build.stable?)
-    odie "Sorry, opencascade support requires building --HEAD"
-  end
-
-  if (build.with? "openmp") && (build.stable?)
-    odie "Sorry, openmp support requies building --HEAD"
-  end
-
-  if build.with? "openmp"
-    env :std # Necessary to switch to a different llvm toolchain.  Apple's clang *still* doesn't support OpenMP.
-    # We need to make sure wx is built and linked against the new toolchain's standard librares.
-    if build.with? "debug"
-      depends_on "metacollin/kicad/wxkdebug" => ["with-openmp"]
-    else
-      depends_on "metacollin/kicad/wxkicad" => ["with-openmp"]
-    end
-  else
-    if  build.with? "debug"
-      depends_on "metacollin/kicad/wxdebug"
-    else
-      depends_on "metacollin/kicad/wxkicad"
-    end
-  end
-
-  bottle do
-    root_url "https://electropi.mp/bottles"
-    cellar :any
-    sha256 "0a3ab5427a0881ecceca9b11429a039109cf86adf942d0c2d3c36a557650df4e" => :sierra
+    odie "Can't build stable unless you add the --without-oce flag.  Otherwise, build --HEAD"
   end
 
   fails_with :gcc
   fails_with :llvm
 
-  if build.with? "python"
-    resource "wxk" do
-      url "https://downloads.sourceforge.net/project/wxpython/wxPython/3.0.2.0/wxPython-src-3.0.2.0.tar.bz2"
-      sha256 "d54129e5fbea4fb8091c87b2980760b72c22a386cb3b9dd2eebc928ef5e8df61"
-    end
-  end
-
-  if build.with? "brewed-library"
-    resource "kicad-library" do
-      url "https://github.com/KiCad/kicad-library.git"
-    end
-  end
+  patch :DATA if build.with? "mc-defaults"
 
   def install
-    if  build.with? "debug"
-      chmod 0644, Dir["#{Formula['metacollin/kicad/wxdebug'].lib}/*.dylib"]
-    else
-      chmod 0644, Dir["#{Formula['metacollin/kicad/wxkicad'].lib}/*.dylib"]
-    end
-
-    osx = MacOS.version
-    osx = "10.11" if (build.with? "openmp") && (osx >= :sierra)
-
     ENV["ARCHFLAGS"] = "-Wunused-command-line-argument-hard-error-in-future"
     ENV.append "LDFLAGS", "-headerpad_max_install_names"
-    ENV.append "LDFLAGS", "-L#{Formula['llvm'].lib} -Wl,-rpath,#{Formula['llvm'].lib}" if build.with? "openmp"
-    ENV["CXXFLAGS"] = "-I#{Formula['llvm'].include}/c++/v1 -std=c++11 -stdlib=libc++" if build.with? "openmp"
-    ENV["CC"] = "#{Formula['llvm'].bin}/clang" if build.with? "openmp"
-    ENV["CXX"] = "#{Formula['llvm'].bin}/clang++" if build.with? "openmp"
-    ENV["MAC_OS_X_VERSION_MIN_REQUIRED"] = osx
+    ENV["MAC_OS_X_VERSION_MIN_REQUIRED"] = MacOS.version
 
     if MacOS.version < :mavericks
       ENV.libstdcxx
     else
       ENV.libcxx
-    end
-
-   # inreplace "include/tool/coroutine.h", "#include <boost/context/fcontext.hpp>", "#if BOOST_VERSION < 106100\n#include <boost/context/fcontext.hpp>\n#else\n#include <boost/context/detail/fcontext.hpp>\n#endif"
-   # inreplace "include/tool/coroutine.h", "boost::context::", "boost::context::detail::"
-
-    if build.with? "brewed-library"
-      inreplace "common/common.cpp", "/Library/Application Support/kicad", "#{etc}/kicad"
-      inreplace "common/common.cpp", "wxStandardPaths::Get().GetUserConfigDir()", "wxT( \"#{etc}/kicad\" )"
-      inreplace "common/pgm_base.cpp", "DEFAULT_INSTALL_PATH", "\"#{etc}/kicad\""
     end
 
     ##!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!##
@@ -136,27 +68,8 @@ class Kicad < Formula
     ##                                                                                                                                 ##
     ## However, this is not an indication it will work for you or won't break or ruin your boards.  Use at your own risk and liability.##
     ## - metacollin #####################################################################################################################
-    if build.with? "nice-curves"
-      inreplace "gerbview/dcode.cpp", "define SEGS_CNT 32", "define SEGS_CNT 64"
-      inreplace "gerbview/export_to_pcbnew.cpp", "SEG_COUNT_CIRCLE    16", "SEG_COUNT_CIRCLE    32"
-      inreplace "gerbview/class_aperture_macro.cpp", "const int seg_per_circle = 64", "const int seg_per_circle = 128"
-      inreplace "common/geometry/shape_poly_set.cpp", "define SEG_CNT_MAX 64", "define SEG_CNT_MAX 128"
-      inreplace "pcbnew/pcbnew.h", "define ARC_APPROX_SEGMENTS_COUNT_LOW_DEF 16", "define ARC_APPROX_SEGMENTS_COUNT_LOW_DEF 30"
-      inreplace "pcbnew/pcbnew.h", "define ARC_APPROX_SEGMENTS_COUNT_HIGHT_DEF 32", "define ARC_APPROX_SEGMENTS_COUNT_HIGHT_DEF 64"
-      inreplace "pcbnew/pcbnew.h", "TEXTS_MIN_SIZE  Mils2iu( 5 )", "TEXTS_MIN_SIZE  Mils2iu( 3 )"
-      inreplace "pcbnew/class_pad_draw_functions.cpp", "define SEGCOUNT 32", "define SEGCOUNT 64"
-      inreplace "common/common_plotDXF_functions.cpp", "const int segmentToCircleCount = 64;", "const int segmentToCircleCount = 128;"
-      inreplace "common/common_plotGERBER_functions.cpp", "const int segmentToCircleCount = 64;", "const int segmentToCircleCount = 128;"
-      inreplace "common/common_plotHPGL_functions.cpp", "const int segmentToCircleCount = 32;", "const int segmentToCircleCount = 64;"
-      inreplace "common/common_plotPS_functions.cpp", "const int segmentToCircleCount = 64;", "const int segmentToCircleCount = 128;"
-      inreplace "include/gal/opengl/opengl_gal.h", "static const int    CIRCLE_POINTS   = 64;", "static const int    CIRCLE_POINTS   = 128;"
-      inreplace "include/gal/opengl/opengl_gal.h", "static const int    CURVE_POINTS    = 32;", "static const int    CURVE_POINTS    = 64;"
-      inreplace "common/class_plotter.cpp", "const int delta = 50;", "const int delta = 25;"
-      inreplace "3d-viewer/3d_canvas/cinfo3d_visu.cpp", "#define MIN_SEG_PER_CIRCLE 12", "#define MIN_SEG_PER_CIRCLE 24"
-      inreplace "3d-viewer/3d_canvas/cinfo3d_visu.cpp", "#define MAX_SEG_PER_CIRCLE 48", "#define MAX_SEG_PER_CIRCLE 96"
-    end
 
-    if build.with? "nicer-curves"
+    if build.with? "nice-curves"
       inreplace "gerbview/dcode.cpp", "define SEGS_CNT 32", "define SEGS_CNT 128"
       inreplace "gerbview/export_to_pcbnew.cpp", "SEG_COUNT_CIRCLE    16", "SEG_COUNT_CIRCLE    64"
       inreplace "gerbview/class_aperture_macro.cpp", "const int seg_per_circle = 64", "const int seg_per_circle = 256"
@@ -176,54 +89,33 @@ class Kicad < Formula
       inreplace "3d-viewer/3d_canvas/cinfo3d_visu.cpp", "#define MAX_SEG_PER_CIRCLE 48", "#define MAX_SEG_PER_CIRCLE 300"
     end
 
-    if build.with? "python"
-      resource("wxk").stage do
-        cd "wxPython" do
-          args = [
-            "WXPORT=osx_cocoa",
-            "UNICODE=1"
-          ]
-
-          if build.with? "debug"
-            args << "WX_CONFIG=#{Formula['metacollin/kicad/wxkdebug'].bin}/wx-config"
-            args << "BUILD_BASE=#{Formula['metacollin/kicad/wxkdebug']}/wx-build"
-          else
-            args << "WX_CONFIG=#{Formula['metacollin/kicad/wxkicad'].bin}/wx-config"
-            args << "BUILD_BASE=#{Formula['metacollin/kicad/wxkicad']}/wx-build"
-          end
-
-          system "python", "setup.py", "build_ext", *args
-          system "python", "setup.py", "install", "--prefix=#{buildpath}/py", *args
-        end
-      end
-    end
-
     mkdir "build" do
-      ENV.prepend_create_path "PYTHONPATH", "#{buildpath}/py/lib/python2.7/site-packages" if build.with? "python"
+      ENV.prepend_create_path "PYTHONPATH", "#{Formula['kicad-wxpython'].lib}/python2.7/site-packages" if build.with? "python"
 
       args = %W[
         -DCMAKE_INSTALL_PREFIX=#{prefix}
-        -DCMAKE_OSX_DEPLOYMENT_TARGET=#{osx}
+        -DCMAKE_OSX_DEPLOYMENT_TARGET=#{MacOS.version}
         -DKICAD_REPO_NAME=brewed_product
         -DKICAD_SKIP_BOOST=ON
-        -DBoost_USE_STATIC_LIBS=ON
-        -DKICAD_USE_SCH_IO_MANAGER=ON
+        -DwxWidgets_CONFIG_EXECUTABLE=#{Formula['metacollin/kicad/kicad-wxwidgets'].bin}/wx-config
+        -DCMAKE_C_COMPILER=#{ENV.cc}
+        -DCMAKE_CXX_COMPILER=#{ENV.cxx}
       ]
 
       if build.with? "debug"
         args << "-DCMAKE_BUILD_TYPE=Debug"
         args << "-DwxWidgets_USE_DEBUG=ON"
-        args << "-DwxWidgets_CONFIG_EXECUTABLE=#{Formula['metacollin/kicad/wxkdebug'].bin}/wx-config"
+        #args << "-DwxWidgets_CONFIG_EXECUTABLE=#{Formula['metacollin/kicad/wxkdebug'].bin}/wx-config"
       else
         args << "-DCMAKE_BUILD_TYPE=Release"
-        args << "-DwxWidgets_CONFIG_EXECUTABLE=#{Formula['metacollin/kicad/wxkicad'].bin}/wx-config"
       end
 
       if build.with? "python"
-        args << "-DPYTHON_SITE_PACKAGE_PATH=#{buildpath}/py/lib/python2.7/site-packages"
+        args << "-DPYTHON_SITE_PACKAGE_PATH=#{Formula['kicad-wxpython'].lib}/python2.7/site-packages"
         args << "-DKICAD_SCRIPTING=ON"
         args << "-DKICAD_SCRIPTING_MODULES=ON"
         args << "-DKICAD_SCRIPTING_WXPYTHON=ON"
+        args << "-DKICAD_SCRIPTING_ACTION_MENU=ON"
         python_executable = `which python`.strip
         args << "-DPYTHON_EXECUTABLE=#{python_executable}"
       else
@@ -232,29 +124,17 @@ class Kicad < Formula
         args << "-DKICAD_SCRIPTING_WXPYTHON=OFF"
       end
 
-      if build.with? "openmp"
-        args << "-DCMAKE_C_COMPILER=#{Formula['llvm'].bin}/clang"
-        args << "-DCMAKE_CXX_COMPILER=#{Formula['llvm'].bin}/clang++"
-      else
-        args << "-DCMAKE_C_COMPILER=#{ENV.cc}"
-        args << "-DCMAKE_CXX_COMPILER=#{ENV.cxx}"
+      if build.with? "oce"
+        args << "-DKICAD_USE_OCE=ON"
+        args << "-DOCE_DIR=#{Formula['oce']}/OCE.framework/Versions/0.18/Resources" #Fix hardcoded version
       end
 
-      args << "-DKICAD_USE_OCE=ON" if build.with? "oce"
       args << "-DKICAD_SPICE=ON" if build.with? "ngspice"
-
-      if build.with? "menu-icons"
-        args << "-DUSE_IMAGES_IN_MENUS=ON"
-      end
 
       system "cmake", "../", *args
       system "make", "-j#{ENV.make_jobs}"
       system "make", "install"
     end
-  end
-
-  def kicaddir
-    etc / "kicad"
   end
 
   def caveats
@@ -275,3 +155,288 @@ class Kicad < Formula
     assert File.exist? "#{prefix}/KiCad.app/Contents/MacOS/kicad"
   end
 end
+
+__END__
+diff --git a/common/project.cpp b/common/project.cpp
+index ebf8f13..9a706a0 100644
+--- a/common/project.cpp
++++ b/common/project.cpp
+@@ -227,6 +227,7 @@ static bool copy_pro_file_template( const SEARCH_STACK& aSearchS, const wxString
+     }
+
+     wxString templateFile = wxT( "kicad." ) + ProjectFileExtension;
++    wxString pcbFile = wxT( "kicad." ) + KiCadPcbFileExtension;
+
+     wxString kicad_pro_template = aSearchS.FindValidPath( templateFile );
+
+@@ -253,6 +254,9 @@ static bool copy_pro_file_template( const SEARCH_STACK& aSearchS, const wxString
+
+     DBG( printf( "%s: using template file '%s' as project file.\n", __func__, TO_UTF8( kicad_pro_template ) );)
+
++
++    wxString kicad_pcb_template = aSearchS.FindValidPath( pcbFile );
++
+     // Verify aDestination can be created. if this is not the case, wxCopyFile
+     // will generate a crappy log error message, and we *do not want* this kind
+     // of stupid message
+@@ -260,7 +264,20 @@ static bool copy_pro_file_template( const SEARCH_STACK& aSearchS, const wxString
+     bool success = true;
+
+     if( fn.IsOk() && fn.IsDirWritable() )
++    {
+         success = wxCopyFile( kicad_pro_template, aDestination );
++        if ( !kicad_pcb_template )
++        {
++        }
++        else
++        {
++
++            wxString aDest = aDestination;
++            aDest.Replace(ProjectFileExtension, KiCadPcbFileExtension);
++            wxCopyFile( kicad_pcb_template, aDest);
++        }
++
++    }
+     else
+     {
+         wxLogMessage( _( "Cannot create prj file '%s' (Directory not writable)" ),
+diff --git a/template/CMakeLists.txt b/template/CMakeLists.txt
+index a804e9e..c3e128d 100644
+--- a/template/CMakeLists.txt
++++ b/template/CMakeLists.txt
+@@ -1,5 +1,6 @@
+ install( FILES
+     kicad.pro
++    kicad.kicad_pcb
+     gost_landscape.kicad_wks
+     gost_portrait.kicad_wks
+     pagelayout_default.kicad_wks
+diff --git a/template/kicad.pro b/template/kicad.pro
+index 804cf83..9f7194d 100644
+--- a/template/kicad.pro
++++ b/template/kicad.pro
+@@ -1,4 +1,4 @@
+-update=22/05/2015 07:44:53
++update=Thursday, 27 August 2015 'amt' 10:17:31
+ version=1
+ last_client=kicad
+ [general]
+@@ -13,13 +13,13 @@ PadDrill=0.600000000000
+ PadDrillOvalY=0.600000000000
+ PadSizeH=1.500000000000
+ PadSizeV=1.500000000000
+-PcbTextSizeV=1.500000000000
+-PcbTextSizeH=1.500000000000
+-PcbTextThickness=0.300000000000
+-ModuleTextSizeV=1.000000000000
+-ModuleTextSizeH=1.000000000000
+-ModuleTextSizeThickness=0.150000000000
+-SolderMaskClearance=0.000000000000
++PcbTextSizeV=0.800000000000
++PcbTextSizeH=0.800000000000
++PcbTextThickness=0.1250000000000
++ModuleTextSizeV=0.800000000000
++ModuleTextSizeH=0.800000000000
++ModuleTextSizeThickness=0.125000000000
++SolderMaskClearance=0.1012000000000
+ SolderMaskMinWidth=0.000000000000
+ DrawSegmentWidth=0.200000000000
+ BoardOutlineThickness=0.100000000000
+@@ -60,3 +60,69 @@ LibName26=opto
+ LibName27=atmel
+ LibName28=contrib
+ LibName29=valves
++LibName30=w_analog
++LibName31=w_connectors
++LibName32=w_device
++LibName33=w_logic
++LibName34=w_memory
++LibName35=w_microcontrollers
++LibName36=w_opto
++LibName37=w_relay
++LibName38=w_rtx
++LibName39=w_transistor
++LibName40=w_vacuum
++LibName41=power_w
++LibName42=collieparts
++LibName43=power_2
++LibName44=nxp_armmcu
++LibName45=onsemi
++LibName46=powerint
++LibName47=pspice
++LibName48=references
++LibName49=relays
++LibName50=rfcom
++LibName51=sensors
++LibName52=silabs
++LibName53=stm8
++LibName54=stm32
++LibName55=supertex
++LibName56=switches
++LibName57=transf
++LibName58=ttl_ieee
++LibName59=video
++LibName60=74xgxx
++LibName61=ac-dc
++LibName62=actel
++LibName63=brooktre
++LibName64=cmos_ieee
++LibName65=dc-dc
++LibName66=elec-unifil
++LibName67=ftdi
++LibName68=gennum
++LibName69=graphic
++LibName70=hc11
++LibName71=ir
++LibName72=logo
++LibName73=microchip_pic10mcu
++LibName74=microchip_pic12mcu
++LibName75=microchip_pic16mcu
++LibName76=microchip_pic18mcu
++LibName77=microchip_pic32mcu
++LibName78=motor_drivers
++LibName79=msp430
++LibName80=nordicsemi
++LibName81=analog_devices
++LibName82=diode
++LibName83=ESD_Protection
++LibName84=Lattice
++LibName85=maxim
++LibName86=microchip_dspic33dsc
++LibName87=Oscillators
++LibName88=Power_Management
++LibName89=Xicor
++LibName90=Zilog
++LibName91=Altera
++LibName92=16C754
++LibName93=dips-s
++LibName94=s5038
++LibName95=usb-b
+diff --git a/template/kicad.kicad_pcb b/template/kicad.kicad_pcb
+index e69de29..8ef89d4 100644
+--- a/template/kicad.kicad_pcb
++++ b/template/kicad.kicad_pcb
+@@ -0,0 +1,123 @@
++(kicad_pcb (version 4) (host pcbnew "(2014-09-28 BZR 5153)-product")
++
++  (general
++    (links 0)
++    (no_connects 0)
++    (area 0 0 0 0)
++    (thickness 1.6)
++    (drawings 0)
++    (tracks 0)
++    (zones 0)
++    (modules 0)
++    (nets 1)
++  )
++
++  (page A4)
++  (layers
++    (0 F.Cu signal)
++    (31 B.Cu signal)
++    (32 B.Adhes user)
++    (33 F.Adhes user)
++    (34 B.Paste user)
++    (35 F.Paste user)
++    (36 B.SilkS user)
++    (37 F.SilkS user)
++    (38 B.Mask user)
++    (39 F.Mask user)
++    (40 Dwgs.User user)
++    (41 Cmts.User user)
++    (42 Eco1.User user)
++    (43 Eco2.User user)
++    (44 Edge.Cuts user)
++    (45 Margin user)
++    (46 B.CrtYd user)
++    (47 F.CrtYd user)
++    (48 B.Fab user)
++    (49 F.Fab user)
++  )
++
++  (setup
++    (last_trace_width 0.254)
++    (user_trace_width 0.1524)
++    (user_trace_width 0.2032)
++    (user_trace_width 0.254)
++    (user_trace_width 0.3048)
++    (user_trace_width 0.381)
++    (user_trace_width 0.4572)
++    (user_trace_width 0.508)
++    (user_trace_width 0.635)
++    (user_trace_width 0.7112)
++    (user_trace_width 0.8128)
++    (user_trace_width 0.9144)
++    (user_trace_width 1.27)
++    (trace_clearance 0.1524)
++    (zone_clearance 0.1524)
++    (zone_45_only yes)
++    (trace_min 0.1524)
++    (segment_width 0.127)
++    (edge_width 0.127)
++    (via_size 0.6858)
++    (via_drill 0.3302)
++    (via_min_size 0.6858)
++    (via_min_drill 0.3302)
++    (user_via 0.8636 0.508)
++    (user_via 0.9906 0.635)
++    (user_via 1.0922 0.7366)
++    (user_via 1.2446 0.889)
++    (user_via 1.3716 1.016)
++    (uvia_size 0.6858)
++    (uvia_drill 0.3302)
++    (uvias_allowed no)
++    (uvia_min_size 0.6858)
++    (uvia_min_drill 0.3302)
++    (pcb_text_width 0.127)
++    (pcb_text_size 0.8 0.8)
++    (mod_edge_width 0.127)
++    (mod_text_size 0.8 0.8)
++    (mod_text_width 0.127)
++    (pad_size 1.524 1.524)
++    (pad_drill 0.762)
++    (pad_to_mask_clearance 0.05)
++    (pad_to_paste_clearance -0.04)
++    (aux_axis_origin 0 0)
++    (visible_elements FFFFFF7F)
++    (pcbplotparams
++      (layerselection 0x010f0_ffffffff)
++      (usegerberextensions false)
++      (usegerberattributes true)
++      (excludeedgelayer true)
++      (linewidth 0.127000)
++      (plotframeref false)
++      (viasonmask false)
++      (mode 1)
++      (useauxorigin false)
++      (hpglpennumber 1)
++      (hpglpenspeed 20)
++      (hpglpendiameter 15)
++      (hpglpenoverlay 2)
++      (psnegative false)
++      (psa4output false)
++      (plotreference true)
++      (plotvalue true)
++      (plotinvisibletext false)
++      (padsonsilk false)
++      (subtractmaskfromsilk false)
++      (outputformat 1)
++      (mirror false)
++      (drillshape 0)
++      (scaleselection 1)
++      (outputdirectory CAM/))
++  )
++
++  (net 0 "")
++
++  (net_class Default "This is the standard class."
++    (clearance 0.1524)
++    (trace_width 0.1524)
++    (via_dia 0.6858)
++    (via_drill 0.3302)
++    (uvia_dia 0.6858)
++    (uvia_drill 0.3302)
++  )
++
++)
