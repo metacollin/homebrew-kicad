@@ -14,7 +14,7 @@ brew install kicad
 --with-oce # Incorporates opencascade for native support several 3D model formats, including .STEP.
            # Requires building --HEAD
 --with-libngspice # Enable SPICE simulation capabilities in eeschema using ngspice as the backend.
-           # Requires building --HEAD
+                  # Requires building --HEAD
 --without-python # If you're afraid of danger noodles.
 --with-nice-curves # Quadruples number of polys or segments used for curves and circles visually
                    # and in plot files (gerbers).
