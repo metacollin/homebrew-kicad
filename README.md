@@ -11,20 +11,20 @@ brew install kicad
 
 ### ...but it's good to have options...
 ```sh
---with-oce # Incorporates opencascade for native support several 3D model formats, including .STEP.
-           # Requires building --HEAD
+--with-oce            # Use OC for native support several 3D model formats, including .STEP.
+                      # Requires building --HEAD
 
---with-libngspice # Enable SPICE simulation capabilities in eeschema using ngspice as the backend.
-                  # Requires building --HEAD
+--with-libngspice     # Enable SPICE simulation capabilities in eeschema using ngspice as the backend.
+                      # Requires building --HEAD
 
---without-python # If you're afraid of danger noodles.
+--without-python      # If you're afraid of danger noodles.
 
---with-nice-curves # Quadruples number of polys or segments used for curves and circles visually
-                   # and in plot files (gerbers).
+--with-nice-curves    # Quadruples number of polys or segments used for curves and circles visually
+                      # and in plot files (gerbers).
 
---HEAD # Builds the latest development version of KiCad.
+--HEAD                # Builds the latest development version of KiCad.
 
---debug # Build with debugging turned on
+--debug               # Build with debugging turned on
 ```
 
 ### Some things have changed
