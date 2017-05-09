@@ -5,10 +5,8 @@ class Kicad < Formula
   sha256 "e97cacc179839e65f2afa14d8830a3bed549aaa9ed234c988851971bf2a42298"
   head "https://git.launchpad.net/kicad", :using => :git
 
-  option "with-nice-curves", "Uses smoothness of curves in pcbnew visually and in plotted outputs (like gerbers).\n\tMost systems shouldn't see a meaningful performance impact."
-  #option "with-ngspice", "Build eeschema with ngspice simulation functionality. --HEAD only."
-  #option "without-oce", "Build with open cascade support.  --HEAD only."
- # option "mc-defaults", "Patch so new pcbnew files are created with metacollin's preferred defaults.  This is for metacollin's own use and is neither supported or recommended."
+  option "with-nice-curves", "Uses smoothness of curves in pcbnew visually and in plotted outputs (like gerbers). Most systems shouldn't see a meaningful performance impact."
+  option "with-mc-defaults", "Patch so new pcbnew files are created with metacollin's preferred defaults.  This is for metacollin's own use and is neither supported or recommended."
 
   depends_on "boost"
   depends_on "cairo"
@@ -32,20 +30,19 @@ class Kicad < Formula
   depends_on "xz"
   depends_on "glm"
   depends_on "metacollin/kicad/kicad-wxwidgets"
-  depends_on "homebrew/science/oce" => :recommended
+  depends_on "homebrew/science/oce" => :optional
   depends_on "libngspice" => :optional
   depends_on "metacollin/kicad/kicad-wxpython" if build.with? "python"
 
-  if (build.with? "ngspice") && (build.stable?)
+  if (build.with? "libngspice") && build.stable?
     odie "Sorry, ngspice functionality requires building --HEAD"
   end
 
-  if (build.with? "oce") && (build.stable?)
-    odie "Can't build stable unless you add the --without-oce flag.  Otherwise, build --HEAD"
+  if (build.with? "oce") && build.stable?
+    odie "Can't build stable if using --with-oce. Build --HEAD instead."
   end
 
   fails_with :gcc
-  fails_with :llvm
 
   patch :DATA if build.with? "mc-defaults"
 
@@ -60,7 +57,7 @@ class Kicad < Formula
       ENV.libcxx
     end
 
-    ##!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!##
+    # #!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#
     ## Note: I have personally had several boards manufactured using gerbers generated with these settings, so these have been tested  ##
     ## in a production environment.                                                                                                    ##
     ##                                                                                                                                 ##
@@ -90,14 +87,14 @@ class Kicad < Formula
     end
 
     mkdir "build" do
-      ENV.prepend_create_path "PYTHONPATH", "#{Formula['kicad-wxpython'].lib}/python2.7/site-packages" if build.with? "python"
+      ENV.prepend_create_path "PYTHONPATH", "#{Formula["metacollin/kicad/kicad-wxpython"].lib}/python2.7/site-packages" if build.with? "python"
 
       args = %W[
         -DCMAKE_INSTALL_PREFIX=#{prefix}
         -DCMAKE_OSX_DEPLOYMENT_TARGET=#{MacOS.version}
         -DKICAD_REPO_NAME=brewed_product
         -DKICAD_SKIP_BOOST=ON
-        -DwxWidgets_CONFIG_EXECUTABLE=#{Formula['metacollin/kicad/kicad-wxwidgets'].bin}/wx-config
+        -DwxWidgets_CONFIG_EXECUTABLE=#{Formula["metacollin/kicad/kicad-wxwidgets"].bin}/wx-config
         -DCMAKE_C_COMPILER=#{ENV.cc}
         -DCMAKE_CXX_COMPILER=#{ENV.cxx}
       ]
@@ -105,13 +102,12 @@ class Kicad < Formula
       if build.with? "debug"
         args << "-DCMAKE_BUILD_TYPE=Debug"
         args << "-DwxWidgets_USE_DEBUG=ON"
-        #args << "-DwxWidgets_CONFIG_EXECUTABLE=#{Formula['metacollin/kicad/wxkdebug'].bin}/wx-config"
       else
         args << "-DCMAKE_BUILD_TYPE=Release"
       end
 
       if build.with? "python"
-        args << "-DPYTHON_SITE_PACKAGE_PATH=#{Formula['kicad-wxpython'].lib}/python2.7/site-packages"
+        args << "-DPYTHON_SITE_PACKAGE_PATH=#{Formula["metacollin/kicad/kicad-wxpython"].lib}/python2.7/site-packages"
         args << "-DKICAD_SCRIPTING=ON"
         args << "-DKICAD_SCRIPTING_MODULES=ON"
         args << "-DKICAD_SCRIPTING_WXPYTHON=ON"
@@ -126,7 +122,7 @@ class Kicad < Formula
 
       if build.with? "oce"
         args << "-DKICAD_USE_OCE=ON"
-        args << "-DOCE_DIR=#{Formula['oce']}/OCE.framework/Versions/0.18/Resources" #Fix hardcoded version
+        args << "-DOCE_DIR=#{Formula["oce"]}/OCE.framework/Versions/0.18/Resources" # Fix hardcoded version
       end
 
       args << "-DKICAD_SPICE=ON" if build.with? "ngspice"
@@ -215,13 +211,7 @@ diff --git a/template/kicad.pro b/template/kicad.pro
 index 804cf83..9f7194d 100644
 --- a/template/kicad.pro
 +++ b/template/kicad.pro
-@@ -1,4 +1,4 @@
--update=22/05/2015 07:44:53
-+update=Thursday, 27 August 2015 'amt' 10:17:31
- version=1
- last_client=kicad
- [general]
-@@ -13,13 +13,13 @@ PadDrill=0.600000000000
+@@ -13,13 +13,13 @@
  PadDrillOvalY=0.600000000000
  PadSizeH=1.500000000000
  PadSizeV=1.500000000000
@@ -242,76 +232,11 @@ index 804cf83..9f7194d 100644
  SolderMaskMinWidth=0.000000000000
  DrawSegmentWidth=0.200000000000
  BoardOutlineThickness=0.100000000000
-@@ -60,3 +60,69 @@ LibName26=opto
+@@ -60,3 +60,4 @@
  LibName27=atmel
  LibName28=contrib
  LibName29=valves
-+LibName30=w_analog
-+LibName31=w_connectors
-+LibName32=w_device
-+LibName33=w_logic
-+LibName34=w_memory
-+LibName35=w_microcontrollers
-+LibName36=w_opto
-+LibName37=w_relay
-+LibName38=w_rtx
-+LibName39=w_transistor
-+LibName40=w_vacuum
-+LibName41=power_w
-+LibName42=collieparts
-+LibName43=power_2
-+LibName44=nxp_armmcu
-+LibName45=onsemi
-+LibName46=powerint
-+LibName47=pspice
-+LibName48=references
-+LibName49=relays
-+LibName50=rfcom
-+LibName51=sensors
-+LibName52=silabs
-+LibName53=stm8
-+LibName54=stm32
-+LibName55=supertex
-+LibName56=switches
-+LibName57=transf
-+LibName58=ttl_ieee
-+LibName59=video
-+LibName60=74xgxx
-+LibName61=ac-dc
-+LibName62=actel
-+LibName63=brooktre
-+LibName64=cmos_ieee
-+LibName65=dc-dc
-+LibName66=elec-unifil
-+LibName67=ftdi
-+LibName68=gennum
-+LibName69=graphic
-+LibName70=hc11
-+LibName71=ir
-+LibName72=logo
-+LibName73=microchip_pic10mcu
-+LibName74=microchip_pic12mcu
-+LibName75=microchip_pic16mcu
-+LibName76=microchip_pic18mcu
-+LibName77=microchip_pic32mcu
-+LibName78=motor_drivers
-+LibName79=msp430
-+LibName80=nordicsemi
-+LibName81=analog_devices
-+LibName82=diode
-+LibName83=ESD_Protection
-+LibName84=Lattice
-+LibName85=maxim
-+LibName86=microchip_dspic33dsc
-+LibName87=Oscillators
-+LibName88=Power_Management
-+LibName89=Xicor
-+LibName90=Zilog
-+LibName91=Altera
-+LibName92=16C754
-+LibName93=dips-s
-+LibName94=s5038
-+LibName95=usb-b
++LibName30=collieparts
 diff --git a/template/kicad.kicad_pcb b/template/kicad.kicad_pcb
 index e69de29..8ef89d4 100644
 --- a/template/kicad.kicad_pcb
