@@ -8,6 +8,7 @@ class Kicad < Formula
   option "with-nice-curves", "Uses smoothness of curves in pcbnew visually and in plotted outputs (like gerbers). Most systems shouldn't see a meaningful performance impact."
   option "with-mc-defaults", "Patch so new pcbnew files are created with metacollin's preferred defaults.  This is for metacollin's own use and is neither supported or recommended."
 
+  depends_on :xcode => :build
   depends_on "boost"
   depends_on "cairo"
   depends_on "cmake" => :build
