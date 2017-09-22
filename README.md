@@ -1,5 +1,5 @@
 # Homebrew KiCad EDA Suite
-_Now building --HEAD and 4.0.6 stable!_
+_Now building --HEAD and 4.0.7 stable!_
 
 Delicious and foamy stable (and `--HEAD`!) [Homebrew](https://github.com/mxcl/homebrew) tap for [KiCad](http://www.kicad-pcb.org). This is intended for anyone who wants to customize their build of KiCad, build latest stable release optimized for their specific version of OS X and using the latest version of boost and other dependencies.
 
@@ -15,7 +15,7 @@ brew install kicad --HEAD
 brew upgrade --fetch-HEAD
 # or just upgrade kicad:
 brew upgrade --fetch-HEAD kicad
-```sh
+```
 
 
 ### ...but it's good to have options...
