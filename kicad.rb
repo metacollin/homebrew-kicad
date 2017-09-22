@@ -1,8 +1,8 @@
 class Kicad < Formula
   desc "Electronic Design Automation Suite"
   homepage "http://www.kicad-pcb.org"
-  url "https://launchpad.net/kicad/4.0/4.0.6/+download/kicad-4.0.6.tar.xz"
-  sha256 "e97cacc179839e65f2afa14d8830a3bed549aaa9ed234c988851971bf2a42298"
+  url "https://launchpad.net/kicad/4.0/4.0.7/+download/kicad-4.0.7.tar.xz"
+  sha256 "09074c77c6097d0f2ae49711c6d6f6c4490f0c068bba69b17f5f07319255fdc1"
   head "https://git.launchpad.net/kicad", :using => :git
 
   option "with-nice-curves", "Uses smoothness of curves in pcbnew visually and in plotted outputs (like gerbers). Most systems shouldn't see a meaningful performance impact."
