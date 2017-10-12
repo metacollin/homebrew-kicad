@@ -38,6 +38,11 @@ class KicadWxwidgets < Formula
   fails_with :gcc
 
   def install
+    if MacOS.version > :sierra
+      ENV.append "CPPFLAGS", "-D__ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES=1"
+      inreplace "src/stc/scintilla/src/Editor.cxx", "#include <stdlib.h>", "#include <cstdlib>\n#include <cmath>"
+    end
+
     mkdir "wx-build" do
       ENV["ARCHFLAGS"] = "-Wunused-command-line-argument-hard-error-in-future"
       ENV.append "LDFLAGS", "-headerpad_max_install_names"
