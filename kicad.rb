@@ -31,7 +31,7 @@ class Kicad < Formula
   depends_on "xz"
   depends_on "glm"
   depends_on "metacollin/kicad/kicad-wxwidgets"
-  depends_on "homebrew/science/oce" => :optional
+  depends_on "oce" => :optional
   depends_on "libngspice" => :optional
   depends_on "metacollin/kicad/kicad-wxpython" if build.with? "python"
 
@@ -67,6 +67,10 @@ class Kicad < Formula
     ## However, this is not an indication it will work for you or won't break or ruin your boards.  Use at your own risk and liability.##
     ## - metacollin #####################################################################################################################
 
+  if build.with? "workaround"
+      inreplace "common/dialog_shim.cpp", "ReparentQuasiModal();", " "
+  end
+
     if build.with? "nice-curves"
       if build.stable? 
         inreplace "gerbview/dcode.cpp", "define SEGS_CNT 32", "define SEGS_CNT 128"
@@ -89,33 +93,33 @@ class Kicad < Formula
       else  # HEAD
         inreplace "gerbview/dcode.cpp", "define SEGS_CNT 64", "define SEGS_CNT 128"
         inreplace "gerbview/export_to_pcbnew.cpp", "SEG_COUNT_CIRCLE    16", "SEG_COUNT_CIRCLE    64"
-        inreplace "gerbview/class_aperture_macro.cpp", "const int seg_per_circle = 64", "const int seg_per_circle = 256"
+       # inreplace "gerbview/class_aperture_macro.cpp", "const int seg_per_circle = 64", "const int seg_per_circle = 256"
         inreplace "common/geometry/shape_poly_set.cpp", "define SEG_CNT_MAX 64", "define SEG_CNT_MAX 256"
         inreplace "pcbnew/pcbnew.h", "define ARC_APPROX_SEGMENTS_COUNT_LOW_DEF 16", "define ARC_APPROX_SEGMENTS_COUNT_LOW_DEF 60"
         inreplace "pcbnew/pcbnew.h", "define ARC_APPROX_SEGMENTS_COUNT_HIGHT_DEF 32", "define ARC_APPROX_SEGMENTS_COUNT_HIGHT_DEF 128"
         inreplace "pcbnew/pcbnew.h", "TEXTS_MIN_SIZE  Mils2iu( 5 )", "TEXTS_MIN_SIZE  Mils2iu( 3 )"
-        inreplace "pcbnew/class_pad_draw_functions.cpp", "define SEGCOUNT 32", "define SEGCOUNT 128"
-        inreplace "common/common_plotDXF_functions.cpp", "const int segmentToCircleCount = 64;", "const int segmentToCircleCount = 256;"
-        inreplace "common/common_plotGERBER_functions.cpp", "const int segmentToCircleCount = 64;", "const int segmentToCircleCount = 256;"
-        inreplace "common/common_plotHPGL_functions.cpp", "const int segmentToCircleCount = 32;", "const int segmentToCircleCount = 128;"
-        inreplace "common/common_plotPS_functions.cpp", "const int segmentToCircleCount = 64;", "const int segmentToCircleCount = 256;"
+        #inreplace "pcbnew/class_pad_draw_functions.cpp", "define SEGCOUNT 32", "define SEGCOUNT 128"
+        #inreplace "common/common_plotDXF_functions.cpp", "const int segmentToCircleCount = 64;", "const int segmentToCircleCount = 256;"
+       # inreplace "common/common_plotGERBER_functions.cpp", "const int segmentToCircleCount = 64;", "const int segmentToCircleCount = 256;"
+      #  inreplace "common/common_plotHPGL_functions.cpp", "const int segmentToCircleCount = 32;", "const int segmentToCircleCount = 128;"
+     #   inreplace "common/common_plotPS_functions.cpp", "const int segmentToCircleCount = 64;", "const int segmentToCircleCount = 256;"
         inreplace "include/gal/opengl/opengl_gal.h", "static const int    CIRCLE_POINTS   = 64;", "static const int    CIRCLE_POINTS   = 256;"
         inreplace "include/gal/opengl/opengl_gal.h", "static const int    CURVE_POINTS    = 32;", "static const int    CURVE_POINTS    = 128;"
-        inreplace "common/class_plotter.cpp", "const int delta = 50;", "const int delta = 10;"
+       # inreplace "common/class_plotter.cpp", "const int delta = 50;", "const int delta = 10;"
         inreplace "3d-viewer/3d_canvas/cinfo3d_visu.cpp", "#define MIN_SEG_PER_CIRCLE 12", "#define MIN_SEG_PER_CIRCLE 48"
         inreplace "3d-viewer/3d_canvas/cinfo3d_visu.cpp", "#define MAX_SEG_PER_CIRCLE 48", "#define MAX_SEG_PER_CIRCLE 300"
       end
     end
 
     mkdir "build" do
-      ENV.prepend_create_path "PYTHONPATH", "#{Formula["metacollin/kicad/kicad-wxpython"].lib}/python2.7/site-packages" if build.with? "python"
+      ENV.prepend_create_path "PYTHONPATH", "#{HOMEBREW_PREFIX}/opt/kicad-wxpython/lib/python2.7/site-packages" if build.with? "python"
 
       args = %W[
         -DCMAKE_INSTALL_PREFIX=#{prefix}
         -DCMAKE_OSX_DEPLOYMENT_TARGET=#{MacOS.version}
         -DKICAD_REPO_NAME=brewed_product
         -DKICAD_SKIP_BOOST=ON
-        -DwxWidgets_CONFIG_EXECUTABLE=#{Formula["metacollin/kicad/kicad-wxwidgets"].bin}/wx-config
+        -DwxWidgets_CONFIG_EXECUTABLE=#{HOMEBREW_PREFIX}/opt/kicad-wxwidgets/bin/wx-config
         -DCMAKE_C_COMPILER=#{ENV.cc}
         -DCMAKE_CXX_COMPILER=#{ENV.cxx}
       ]
@@ -128,7 +132,7 @@ class Kicad < Formula
       end
 
       if build.with? "python"
-        args << "-DPYTHON_SITE_PACKAGE_PATH=#{Formula["metacollin/kicad/kicad-wxpython"].lib}/python2.7/site-packages"
+        args << "-DPYTHON_SITE_PACKAGE_PATH=#{HOMEBREW_PREFIX}/opt/kicad-wxpython/lib/python2.7/site-packages"
         args << "-DKICAD_SCRIPTING=ON"
         args << "-DKICAD_SCRIPTING_MODULES=ON"
         args << "-DKICAD_SCRIPTING_WXPYTHON=ON"
@@ -146,7 +150,7 @@ class Kicad < Formula
         args << "-DOCE_DIR=#{Formula["oce"]}/OCE.framework/Versions/0.18/Resources" # Fix hardcoded version
       end
 
-      args << "-DKICAD_SPICE=ON" if build.with? "ngspice"
+      args << "-DKICAD_SPICE=OFF" if build.without? "ngspice"
 
       system "cmake", "../", *args
       system "make", "-j#{ENV.make_jobs}"
