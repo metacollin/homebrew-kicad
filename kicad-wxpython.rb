@@ -12,6 +12,7 @@ class KicadWxpython < Formula
   keg_only "custom patched version of wxPython, only for use by KiCad"
 
   depends_on "metacollin/kicad/kicad-wxwidgets"
+  depends_on "python@2"
 
   def install
     ENV["ARCHFLAGS"] = "-Wunused-command-line-argument-hard-error-in-future"
@@ -27,12 +28,12 @@ class KicadWxpython < Formula
       "WXPORT=osx_cocoa",
       "UNICODE=1",
       "WX_CONFIG=#{Formula["metacollin/kicad/kicad-wxwidgets"].opt_bin}/wx-config",
-      "BUILD_BASE=#{Formula["metacollin/kicad/kicad-wxwidgets"]}/wx-build",
+      "BUILD_BASE=#{Formula["metacollin/kicad/kicad-wxwidgets"]}/wx-build"
     ]
 
     cd "wxPython" do
-      system "python", "setup.py", "build_ext", *args
-      system "python", "setup.py", "install", "--prefix=#{prefix}", *args
+      system "#{Formula["python@2"].bin}/python", "setup.py", "build_ext", *args
+      system "#{Formula["python@2"].bin}/python", "setup.py", "install", "--prefix=#{prefix}", *args
     end
 
     include.install_symlink include/"wx-3.0"/"wx"

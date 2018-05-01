@@ -1,5 +1,5 @@
 # Homebrew KiCad EDA Suite
-_Now building --HEAD and 4.0.7 stable!_
+KiCad 5 prerelease and KiCad stable supported.
 
 Delicious and foamy stable (and `--HEAD`!) [Homebrew](https://github.com/mxcl/homebrew) tap for [KiCad](http://www.kicad-pcb.org). This is intended for anyone who wants to customize their build of KiCad, build latest stable release optimized for their specific version of OS X and using the latest version of boost and other dependencies.
 
@@ -27,9 +27,6 @@ brew upgrade --fetch-HEAD kicad
                       # Requires building --HEAD
 
 --without-python      # If you're afraid of danger noodles.
-
---with-nice-curves    # Quadruples number of polys or segments used for curves and circles visually
-                      # and in plot files (gerbers).
 
 --HEAD                # Builds the latest development version of KiCad.
 
